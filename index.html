@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Budget Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface-alt: #f8f9fb;
+      --border: #e4e7ec;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --red: #dc2626;
+      --red-bg: #fee2e2;
+      --blue: #2563eb;
+      --blue-bg: #dbeafe;
+      --radius: 14px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 60px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -.5px;
+      color: var(--text);
+    }
+    header p {
+      color: var(--text-muted);
+      font-size: .9rem;
+      margin-top: 4px;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Balance card ── */
+    .balance-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 24px 24px;
+      text-align: center;
+    }
+    .balance-label {
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .balance-amount {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      transition: color .3s;
+    }
+    .balance-amount.positive { color: var(--green); }
+    .balance-amount.negative { color: var(--red); }
+    .balance-amount.zero     { color: var(--text-muted); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .stat {
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .stat.income { background: var(--green-bg); }
+    .stat.expense { background: var(--red-bg); }
+    .stat-icon {
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+    .stat-info { display: flex; flex-direction: column; }
+    .stat-label {
+      font-size: .72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-muted);
+    }
+    .stat-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -.5px;
+    }
+    .stat.income .stat-value { color: var(--green); }
+    .stat.expense .stat-value { color: var(--red); }
+
+    /* ── Add entry form ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .type-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .type-btn {
+      padding: 10px;
+      border-radius: 9px;
+      border: 2px solid var(--border);
+      background: var(--surface-alt);
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .18s;
+      color: var(--text-muted);
+    }
+    .type-btn.active.income {
+      border-color: var(--green);
+      background: var(--green-bg);
+      color: var(--green);
+    }
+    .type-btn.active.expense {
+      border-color: var(--red);
+      background: var(--red-bg);
+      color: var(--red);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    input, select {
+      padding: 10px 12px;
+      border-radius: 9px;
+      border: 1.5px solid var(--border);
+      background: var(--surface-alt);
+      font-size: .95rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color .18s, box-shadow .18s;
+      font-family: inherit;
+      width: 100%;
+    }
+    input:focus, select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    .add-btn {
+      margin-top: 14px;
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: var(--blue);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: -.2px;
+      transition: background .18s, transform .1s;
+      font-family: inherit;
+    }
+    .add-btn:hover { background: #1d4ed8; }
+    .add-btn:active { transform: scale(.98); }
+
+    /* ── Transactions list ── */
+    .list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .clear-btn {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: inherit;
+      transition: background .15s, color .15s;
+    }
+    .clear-btn:hover { background: var(--red-bg); color: var(--red); }
+
+    .empty-state {
+      text-align: center;
+      padding: 36px 0;
+      color: var(--text-muted);
+    }
+    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .empty-state p { font-size: .9rem; }
+
+    .tx-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tx-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--surface-alt);
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      transition: border-color .15s;
+      animation: slideIn .2s ease;
+    }
+    .tx-item:hover { border-color: #d0d5dd; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .tx-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .tx-icon.income  { background: var(--green-bg); }
+    .tx-icon.expense { background: var(--red-bg); }
+
+    .tx-meta { flex: 1; min-width: 0; }
+    .tx-desc {
+      font-size: .95rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tx-detail {
+      font-size: .78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .tx-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .tx-amount {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -.3px;
+    }
+    .tx-amount.income  { color: var(--green); }
+    .tx-amount.expense { color: var(--red); }
+
+    .del-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 1rem;
+      transition: background .15s, color .15s;
+    }
+    .del-btn:hover { background: var(--red-bg); color: var(--red); }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Budget Tracker</h1>
+  <p>Keep tabs on your income &amp; expenses</p>
+</header>
+
+<div class="container">
+
+  <!-- Balance -->
+  <div class="balance-card">
+    <div class="balance-label">Current Balance</div>
+    <div class="balance-amount zero" id="balance">$0.00</div>
+    <div class="stats">
+      <div class="stat income">
+        <div class="stat-icon">↑</div>
+        <div class="stat-info">
+          <span class="stat-label">Income</span>
+          <span class="stat-value" id="total-income">$0.00</span>
+        </div>
+      </div>
+      <div class="stat expense">
+        <div class="stat-icon">↓</div>
+        <div class="stat-info">
+          <span class="stat-label">Expenses</span>
+          <span class="stat-value" id="total-expense">$0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Entry -->
+  <div class="card">
+    <div class="card-title">Add Transaction</div>
+
+    <div class="type-toggle">
+      <button class="type-btn active income" id="btn-income" onclick="setType('income')">
+        ↑ Income
+      </button>
+      <button class="type-btn expense" id="btn-expense" onclick="setType('expense')">
+        ↓ Expense
+      </button>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group full">
+        <label for="desc">Description</label>
+        <input type="text" id="desc" placeholder="e.g. Freelance payment" maxlength="60" />
+      </div>
+      <div class="form-group">
+        <label for="amount">Amount ($)</label>
+        <input type="number" id="amount" placeholder="0.00" min="0.01" step="0.01" />
+      </div>
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category"></select>
+      </div>
+    </div>
+
+    <button class="add-btn" onclick="addEntry()">Add Transaction</button>
+  </div>
+
+  <!-- Transaction List -->
+  <div class="card">
+    <div class="list-header card-title">
+      Transactions
+      <button class="clear-btn" onclick="clearAll()">Clear all</button>
+    </div>
+    <div id="tx-container"></div>
+  </div>
+
+</div>
+
+<script>
+  const CATEGORIES = {
+    income:  ['Salary','Freelance','Investment','Gift','Refund','Other'],
+    expense: ['Food','Housing','Transport','Healthcare','Entertainment','Shopping','Utilities','Education','Other']
+  };
+
+  const ICONS = {
+    Salary:'💼', Freelance:'💻', Investment:'📈', Gift:'🎁', Refund:'↩️',
+    Food:'🍔', Housing:'🏠', Transport:'🚗', Healthcare:'💊',
+    Entertainment:'🎬', Shopping:'🛍️', Utilities:'⚡', Education:'📚',
+    Other:'📌'
+  };
+
+  let entries = JSON.parse(localStorage.getItem('budget-entries') || '[]');
+  let currentType = 'income';
+
+  function save() {
+    localStorage.setItem('budget-entries', JSON.stringify(entries));
+  }
+
+  function fmt(n) {
+    return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function setType(type) {
+    currentType = type;
+    document.getElementById('btn-income').classList.toggle('active', type === 'income');
+    document.getElementById('btn-expense').classList.toggle('active', type === 'expense');
+    populateCategories();
+  }
+
+  function populateCategories() {
+    const sel = document.getElementById('category');
+    sel.innerHTML = CATEGORIES[currentType].map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+
+  function addEntry() {
+    const desc   = document.getElementById('desc').value.trim();
+    const amount = parseFloat(document.getElementById('amount').value);
+    const cat    = document.getElementById('category').value;
+
+    if (!desc)          { shake('desc');   return; }
+    if (!amount || amount <= 0) { shake('amount'); return; }
+
+    entries.unshift({
+      id: Date.now(),
+      type: currentType,
+      desc,
+      amount,
+      category: cat,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    });
+
+    save();
+    document.getElementById('desc').value   = '';
+    document.getElementById('amount').value = '';
+    render();
+  }
+
+  function deleteEntry(id) {
+    entries = entries.filter(e => e.id !== id);
+    save();
+    render();
+  }
+
+  function clearAll() {
+    if (!entries.length) return;
+    if (confirm('Delete all transactions? This cannot be undone.')) {
+      entries = [];
+      save();
+      render();
+    }
+  }
+
+  function shake(id) {
+    const el = document.getElementById(id);
+    el.style.borderColor = 'var(--red)';
+    el.style.animation = 'none';
+    requestAnimationFrame(() => {
+      el.style.animation = 'shake .35s ease';
+    });
+    setTimeout(() => { el.style.borderColor = ''; el.style.animation = ''; }, 600);
+  }
+
+  function render() {
+    const totalIncome  = entries.filter(e => e.type === 'income').reduce((s,e) => s + e.amount, 0);
+    const totalExpense = entries.filter(e => e.type === 'expense').reduce((s,e) => s + e.amount, 0);
+    const balance      = totalIncome - totalExpense;
+
+    const balEl = document.getElementById('balance');
+    balEl.textContent = (balance < 0 ? '-' : '') + fmt(balance);
+    balEl.className = 'balance-amount ' + (balance > 0 ? 'positive' : balance < 0 ? 'negative' : 'zero');
+
+    document.getElementById('total-income').textContent  = fmt(totalIncome);
+    document.getElementById('total-expense').textContent = fmt(totalExpense);
+
+    const container = document.getElementById('tx-container');
+    if (!entries.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">💳</div>
+          <p>No transactions yet.<br>Add your first one above!</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="tx-list">${entries.map(e => `
+      <div class="tx-item">
+        <div class="tx-icon ${e.type}">${ICONS[e.category] || '📌'}</div>
+        <div class="tx-meta">
+          <div class="tx-desc">${escHtml(e.desc)}</div>
+          <div class="tx-detail">${e.category} · ${e.date}</div>
+        </div>
+        <div class="tx-right">
+          <span class="tx-amount ${e.type}">${e.type === 'income' ? '+' : '−'}${fmt(e.amount)}</span>
+          <button class="del-btn" onclick="deleteEntry(${e.id})" title="Delete">✕</button>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Add shake keyframe dynamically
+  const style = document.createElement('style');
+  style.textContent = `@keyframes shake {
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-6px)}
+    40%{transform:translateX(6px)}
+    60%{transform:translateX(-4px)}
+    80%{transform:translateX(4px)}
+  }`;
+  document.head.appendChild(style);
+
+  // Init
+  populateCategories();
+  render();
+
+  // Allow Enter key to submit
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.target.id === 'desc' || e.target.id === 'amount')) {
+      addEntry();
+    }
+  });
+</script>
+</body>
+</html>
