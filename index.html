@@ -354,9 +354,162 @@
     .ms-net     { color: var(--text-muted); }
     .ms-net.positive { color: var(--green); }
     .ms-net.negative { color: var(--red); }
+
+    /* ── Recurring notification banner ── */
+    .rec-banner {
+      max-width: 640px;
+      margin: 0 auto 16px;
+      padding: 12px 16px;
+      background: var(--green-bg);
+      border: 1.5px solid var(--green);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: .9rem;
+      color: #14532d;
+      font-weight: 600;
+    }
+    .rec-banner-text { flex: 1; line-height: 1.5; }
+    .rec-dismiss {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--green);
+      font-size: 1.1rem;
+      line-height: 1;
+      flex-shrink: 0;
+      padding: 2px;
+    }
+    .rec-dismiss:hover { opacity: .7; }
+
+    /* ── Transaction tabs ── */
+    .tx-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+    .tx-tab {
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--surface-alt);
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all .15s;
+      font-family: inherit;
+    }
+    .tx-tab.active {
+      border-color: var(--blue);
+      background: var(--blue-bg);
+      color: var(--blue);
+    }
+
+    /* ── Recurring settings card ── */
+    .rec-card-head {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0;
+    }
+    .rec-card-head.open { margin-bottom: 16px; }
+    .rec-chevron { font-size: .9rem; color: var(--text-muted); transition: transform .2s; }
+    .rec-chevron.open { transform: rotate(90deg); }
+
+    .rec-section {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    .rec-section:last-child { margin-bottom: 0; }
+    .rec-section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .rec-section-title { font-size: .92rem; font-weight: 700; }
+    .rec-enable {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .83rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .rec-enable input { width: auto; }
+
+    .save-rec-btn {
+      margin-top: 12px;
+      padding: 9px 18px;
+      border-radius: 9px;
+      border: none;
+      background: var(--blue);
+      color: #fff;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+    }
+    .save-rec-btn:hover { background: #1d4ed8; }
+    .save-rec-btn.success { background: var(--green); }
+
+    /* Other recurring rules list */
+    .rec-rule-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      background: var(--surface-alt);
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      margin-bottom: 6px;
+      font-size: .88rem;
+    }
+    .rec-rule-info { flex: 1; min-width: 0; }
+    .rec-rule-label { font-weight: 600; }
+    .rec-rule-meta { font-size: .77rem; color: var(--text-muted); margin-top: 2px; }
+    .rec-rule-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .rec-edit-btn, .rec-del-btn {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: .95rem;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      transition: background .15s, color .15s;
+    }
+    .rec-edit-btn:hover { background: var(--blue-bg); color: var(--blue); }
+    .rec-del-btn:hover  { background: var(--red-bg);  color: var(--red); }
+
+    .rec-add-form {
+      border-top: 1.5px solid var(--border);
+      margin-top: 12px;
+      padding-top: 12px;
+    }
+    .rec-add-title {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
+
+<!-- Recurring notification banner (hidden until triggered) -->
+<div id="rec-banner" class="rec-banner" style="display:none">
+  <span class="rec-banner-text" id="rec-banner-text"></span>
+  <button class="rec-dismiss" onclick="dismissBanner()" title="Dismiss">✕</button>
+</div>
+
 <header>
   <h1>Budget Tracker</h1>
   <p>Keep tabs on your income &amp; expenses</p>
@@ -417,11 +570,115 @@
     <button class="add-btn" onclick="addEntry()">Add Transaction</button>
   </div>
 
+  <!-- Recurring Settings -->
+  <div class="card">
+    <div class="card-title rec-card-head" id="rec-card-head" onclick="toggleRecurringPanel()">
+      <span>🔁 Recurring Transactions</span>
+      <span class="rec-chevron" id="rec-chevron">▸</span>
+    </div>
+    <div id="rec-panel" style="display:none">
+
+      <!-- Salary -->
+      <div class="rec-section">
+        <div class="rec-section-head">
+          <span class="rec-section-title">💼 Salary</span>
+          <label class="rec-enable">
+            <input type="checkbox" id="salary-enabled"> Enable
+          </label>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="salary-label">Label</label>
+            <input type="text" id="salary-label" placeholder="Salary" maxlength="40" />
+          </div>
+          <div class="form-group">
+            <label for="salary-amount">Amount ($)</label>
+            <input type="number" id="salary-amount" placeholder="0.00" min="0.01" step="0.01" />
+          </div>
+          <div class="form-group full">
+            <label for="salary-timing">When to add each month</label>
+            <select id="salary-timing" onchange="updateSalaryTimingUI()">
+              <option value="last-working-day">Last working day (Mon–Fri)</option>
+              <option value="specific-day">Specific day of month</option>
+            </select>
+          </div>
+          <div class="form-group" id="salary-day-group" style="display:none">
+            <label for="salary-day">Day of month</label>
+            <input type="number" id="salary-day" min="1" max="31" placeholder="25" />
+          </div>
+        </div>
+        <button class="save-rec-btn" id="salary-save-btn" onclick="saveSalary()">Save Salary</button>
+      </div>
+
+      <!-- Rent -->
+      <div class="rec-section">
+        <div class="rec-section-head">
+          <span class="rec-section-title">🏠 Rent</span>
+          <label class="rec-enable">
+            <input type="checkbox" id="rent-enabled"> Enable
+          </label>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="rent-amount">Amount ($)</label>
+            <input type="number" id="rent-amount" placeholder="0.00" min="0.01" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label for="rent-day">Day of month</label>
+            <input type="number" id="rent-day" min="1" max="31" value="1" />
+          </div>
+        </div>
+        <button class="save-rec-btn" id="rent-save-btn" onclick="saveRent()">Save Rent</button>
+      </div>
+
+      <!-- Other recurring -->
+      <div class="rec-section">
+        <div class="rec-section-head">
+          <span class="rec-section-title">📋 Other Recurring</span>
+        </div>
+        <div id="other-rules-list"></div>
+        <div class="rec-add-form">
+          <div class="rec-add-title" id="other-add-title">Add recurring transaction</div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label for="other-label">Label</label>
+              <input type="text" id="other-label" placeholder="e.g. Netflix" maxlength="40" />
+            </div>
+            <div class="form-group">
+              <label for="other-amount">Amount ($)</label>
+              <input type="number" id="other-amount" placeholder="0.00" min="0.01" step="0.01" />
+            </div>
+            <div class="form-group">
+              <label for="other-day">Day of month</label>
+              <input type="number" id="other-day" min="1" max="31" placeholder="1" />
+            </div>
+            <div class="form-group full">
+              <label>Type</label>
+              <div class="type-toggle">
+                <button class="type-btn active expense" id="other-btn-expense" onclick="setOtherType('expense')">↓ Expense</button>
+                <button class="type-btn income"         id="other-btn-income"  onclick="setOtherType('income')">↑ Income</button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="save-rec-btn" id="other-save-btn" onclick="saveOther()">Add</button>
+            <button class="save-rec-btn" id="other-cancel-btn" onclick="cancelEditOther()" style="display:none;background:var(--text-muted)">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Transaction List -->
   <div class="card">
     <div class="list-header card-title">
       Transactions
       <button class="clear-btn" onclick="clearAll()">Clear all</button>
+    </div>
+    <div class="tx-tabs">
+      <button class="tx-tab active" id="tab-all" onclick="setTxTab('all')">All</button>
+      <button class="tx-tab" id="tab-rec" onclick="setTxTab('recurring')">🔁 Recurring</button>
     </div>
     <div id="tx-container"></div>
   </div>
@@ -444,8 +701,358 @@
   let entries = JSON.parse(localStorage.getItem('budget-entries') || '[]');
   let currentType = 'income';
 
+  // ── Recurring state ──
+  let recurringConfig = JSON.parse(localStorage.getItem('budget-recurring-config') || JSON.stringify({
+    salary: { enabled: false, label: 'Salary', amount: 0, timing: 'last-working-day', day: 25, createdYM: null },
+    rent:   { enabled: false, amount: 0, day: 1, createdYM: null },
+    others: []
+  }));
+  let recurringLog = JSON.parse(localStorage.getItem('budget-recurring-log') || '{}');
+  let currentTab       = 'all';
+  let editingOtherId   = null;   // null = adding new; set to rule.id when editing
+  let otherFormType    = 'expense';
+
   function save() {
     localStorage.setItem('budget-entries', JSON.stringify(entries));
+  }
+
+  function saveRecurringConfig() {
+    localStorage.setItem('budget-recurring-config', JSON.stringify(recurringConfig));
+  }
+  function saveRecurringLog() {
+    localStorage.setItem('budget-recurring-log', JSON.stringify(recurringLog));
+  }
+
+  // ── Date helpers ──
+  function toYM(date) {
+    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
+  }
+  function clampDay(year, month, day) {
+    return Math.min(day, new Date(year, month + 1, 0).getDate());
+  }
+  function lastWorkingDay(year, month) {
+    let d = new Date(year, month + 1, 0);
+    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
+    return d;
+  }
+
+  // ── Recurring check engine ──
+  function checkAndApplyRecurring() {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const added = [];
+
+    // Check the last 7 months (6 back + current) to catch missed payments
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const y = d.getFullYear(), m = d.getMonth();
+      const ym = toYM(d);
+
+      // ── Salary ──
+      const sal = recurringConfig.salary;
+      if (sal.enabled && sal.amount > 0 && sal.createdYM && ym >= sal.createdYM) {
+        const logKey = 'salary-' + ym;
+        if (!recurringLog[logKey]) {
+          const due = sal.timing === 'last-working-day'
+            ? lastWorkingDay(y, m)
+            : new Date(y, m, clampDay(y, m, sal.day));
+          due.setHours(8, 0, 0, 0);
+          if (due <= today) {
+            entries.push({
+              id: due.getTime(),
+              type: 'income',
+              desc: sal.label || 'Salary',
+              amount: sal.amount,
+              category: 'Salary',
+              date: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              recurring: true,
+              recurringRule: 'salary'
+            });
+            recurringLog[logKey] = true;
+            added.push((sal.label || 'Salary') + ' ' + fmt(sal.amount));
+          }
+        }
+      }
+
+      // ── Rent ──
+      const rent = recurringConfig.rent;
+      if (rent.enabled && rent.amount > 0 && rent.createdYM && ym >= rent.createdYM) {
+        const logKey = 'rent-' + ym;
+        if (!recurringLog[logKey]) {
+          const due = new Date(y, m, clampDay(y, m, rent.day));
+          due.setHours(9, 0, 0, 0);
+          if (due <= today) {
+            entries.push({
+              id: due.getTime(),
+              type: 'expense',
+              desc: 'Rent',
+              amount: rent.amount,
+              category: 'Housing',
+              date: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              recurring: true,
+              recurringRule: 'rent'
+            });
+            recurringLog[logKey] = true;
+            added.push('Rent ' + fmt(rent.amount));
+          }
+        }
+      }
+
+      // ── Others ──
+      recurringConfig.others.forEach(function(rule) {
+        if (!rule.createdYM || ym < rule.createdYM) return;
+        const logKey = 'other-' + rule.id + '-' + ym;
+        if (!recurringLog[logKey]) {
+          const due = new Date(y, m, clampDay(y, m, rule.day));
+          due.setHours(10, 0, 0, rule.id % 1000);
+          if (due <= today) {
+            entries.push({
+              id: due.getTime(),
+              type: rule.type,
+              desc: rule.label,
+              amount: rule.amount,
+              category: 'Other',
+              date: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              recurring: true,
+              recurringRule: 'other-' + rule.id
+            });
+            recurringLog[logKey] = true;
+            added.push(rule.label + ' ' + fmt(rule.amount));
+          }
+        }
+      });
+    }
+
+    if (added.length) {
+      entries.sort(function(a, b) { return b.id - a.id; });
+      save();
+      saveRecurringLog();
+      const count = added.length;
+      showBanner('✅ ' + count + ' recurring transaction' + (count > 1 ? 's' : '') + ' added: ' + added.join(', '));
+      render();
+    }
+  }
+
+  // ── Notification banner ──
+  function showBanner(text) {
+    document.getElementById('rec-banner-text').textContent = text;
+    document.getElementById('rec-banner').style.display = 'flex';
+  }
+  function dismissBanner() {
+    document.getElementById('rec-banner').style.display = 'none';
+  }
+
+  // ── Recurring settings panel toggle ──
+  function toggleRecurringPanel() {
+    const panel   = document.getElementById('rec-panel');
+    const chevron = document.getElementById('rec-chevron');
+    const head    = document.getElementById('rec-card-head');
+    const open    = panel.style.display === 'none';
+    panel.style.display   = open ? '' : 'none';
+    chevron.classList.toggle('open', open);
+    head.classList.toggle('open', open);
+  }
+
+  // ── Salary form ──
+  function populateSalaryForm() {
+    const sal = recurringConfig.salary;
+    document.getElementById('salary-enabled').checked = sal.enabled;
+    document.getElementById('salary-label').value     = sal.label || 'Salary';
+    document.getElementById('salary-amount').value    = sal.amount || '';
+    document.getElementById('salary-timing').value    = sal.timing || 'last-working-day';
+    document.getElementById('salary-day').value       = sal.day || '';
+    updateSalaryTimingUI();
+  }
+  function updateSalaryTimingUI() {
+    const timing = document.getElementById('salary-timing').value;
+    document.getElementById('salary-day-group').style.display =
+      timing === 'specific-day' ? '' : 'none';
+  }
+  function saveSalary() {
+    const enabled = document.getElementById('salary-enabled').checked;
+    const label   = document.getElementById('salary-label').value.trim() || 'Salary';
+    const amount  = parseFloat(document.getElementById('salary-amount').value);
+    const timing  = document.getElementById('salary-timing').value;
+    const day     = parseInt(document.getElementById('salary-day').value, 10);
+
+    if (enabled) {
+      if (!amount || amount <= 0) { shake('salary-amount'); return; }
+      if (timing === 'specific-day' && (!day || day < 1 || day > 31)) { shake('salary-day'); return; }
+    }
+
+    const wasEnabled  = recurringConfig.salary.enabled;
+    const hadCreatedYM = recurringConfig.salary.createdYM;
+
+    recurringConfig.salary = {
+      enabled,
+      label,
+      amount: amount || 0,
+      timing,
+      day: day || 25,
+      // Set createdYM the first time it's enabled, or reset it if re-enabling after being off
+      createdYM: enabled
+        ? (hadCreatedYM && wasEnabled ? hadCreatedYM : toYM(new Date()))
+        : (hadCreatedYM || null)
+    };
+    saveRecurringConfig();
+    flashBtn('salary-save-btn');
+  }
+
+  // ── Rent form ──
+  function populateRentForm() {
+    const rent = recurringConfig.rent;
+    document.getElementById('rent-enabled').checked = rent.enabled;
+    document.getElementById('rent-amount').value    = rent.amount || '';
+    document.getElementById('rent-day').value       = rent.day || 1;
+  }
+  function saveRent() {
+    const enabled = document.getElementById('rent-enabled').checked;
+    const amount  = parseFloat(document.getElementById('rent-amount').value);
+    const day     = parseInt(document.getElementById('rent-day').value, 10) || 1;
+
+    if (enabled) {
+      if (!amount || amount <= 0) { shake('rent-amount'); return; }
+    }
+
+    const wasEnabled   = recurringConfig.rent.enabled;
+    const hadCreatedYM = recurringConfig.rent.createdYM;
+
+    recurringConfig.rent = {
+      enabled,
+      amount: amount || 0,
+      day,
+      createdYM: enabled
+        ? (hadCreatedYM && wasEnabled ? hadCreatedYM : toYM(new Date()))
+        : (hadCreatedYM || null)
+    };
+    saveRecurringConfig();
+    flashBtn('rent-save-btn');
+  }
+
+  // ── Other recurring rules ──
+  function renderOtherRules() {
+    const list = document.getElementById('other-rules-list');
+    if (!recurringConfig.others.length) {
+      list.innerHTML = '';
+      return;
+    }
+    list.innerHTML = recurringConfig.others.map(function(rule) {
+      const typeLabel = rule.type === 'income'
+        ? '<span style="color:var(--green)">↑ Income</span>'
+        : '<span style="color:var(--red)">↓ Expense</span>';
+      return '<div class="rec-rule-item">' +
+        '<div class="rec-rule-info">' +
+          '<div class="rec-rule-label">' + escHtml(rule.label) + '</div>' +
+          '<div class="rec-rule-meta">' + typeLabel + ' · ' + fmt(rule.amount) + ' · Day ' + rule.day + '</div>' +
+        '</div>' +
+        '<div class="rec-rule-actions">' +
+          '<button class="rec-edit-btn" onclick="editOther(' + rule.id + ')" title="Edit">✎</button>' +
+          '<button class="rec-del-btn"  onclick="deleteOther(' + rule.id + ')" title="Delete">✕</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function setOtherType(type) {
+    otherFormType = type;
+    document.getElementById('other-btn-income').classList.toggle('active', type === 'income');
+    document.getElementById('other-btn-income').classList.toggle('income', type === 'income');
+    document.getElementById('other-btn-expense').classList.toggle('active', type === 'expense');
+    document.getElementById('other-btn-expense').classList.toggle('expense', type === 'expense');
+  }
+
+  function saveOther() {
+    const label  = document.getElementById('other-label').value.trim();
+    const amount = parseFloat(document.getElementById('other-amount').value);
+    const day    = parseInt(document.getElementById('other-day').value, 10);
+
+    if (!label)                       { shake('other-label');  return; }
+    if (!amount || amount <= 0)       { shake('other-amount'); return; }
+    if (!day || day < 1 || day > 31)  { shake('other-day');    return; }
+
+    if (editingOtherId !== null) {
+      // Update existing rule, preserving createdYM
+      const idx = recurringConfig.others.findIndex(function(r) { return r.id === editingOtherId; });
+      if (idx !== -1) {
+        recurringConfig.others[idx] = {
+          id:        recurringConfig.others[idx].id,
+          label,
+          amount,
+          day,
+          type:      otherFormType,
+          createdYM: recurringConfig.others[idx].createdYM
+        };
+      }
+    } else {
+      recurringConfig.others.push({
+        id:        Date.now(),
+        label,
+        amount,
+        day,
+        type:      otherFormType,
+        createdYM: toYM(new Date())
+      });
+    }
+
+    saveRecurringConfig();
+    renderOtherRules();
+    clearOtherForm();
+  }
+
+  function editOther(id) {
+    const rule = recurringConfig.others.find(function(r) { return r.id === id; });
+    if (!rule) return;
+    editingOtherId = id;
+    document.getElementById('other-label').value  = rule.label;
+    document.getElementById('other-amount').value = rule.amount;
+    document.getElementById('other-day').value    = rule.day;
+    setOtherType(rule.type);
+    document.getElementById('other-add-title').textContent = 'Edit recurring transaction';
+    document.getElementById('other-save-btn').textContent  = 'Save';
+    document.getElementById('other-cancel-btn').style.display = '';
+  }
+
+  function deleteOther(id) {
+    recurringConfig.others = recurringConfig.others.filter(function(r) { return r.id !== id; });
+    saveRecurringConfig();
+    renderOtherRules();
+    if (editingOtherId === id) cancelEditOther();
+  }
+
+  function cancelEditOther() {
+    editingOtherId = null;
+    clearOtherForm();
+  }
+
+  function clearOtherForm() {
+    editingOtherId = null;
+    document.getElementById('other-label').value  = '';
+    document.getElementById('other-amount').value = '';
+    document.getElementById('other-day').value    = '';
+    setOtherType('expense');
+    document.getElementById('other-add-title').textContent    = 'Add recurring transaction';
+    document.getElementById('other-save-btn').textContent     = 'Add';
+    document.getElementById('other-cancel-btn').style.display = 'none';
+  }
+
+  // ── Tab switching ──
+  function setTxTab(tab) {
+    currentTab = tab;
+    document.getElementById('tab-all').classList.toggle('active', tab === 'all');
+    document.getElementById('tab-rec').classList.toggle('active', tab === 'recurring');
+    render();
+  }
+
+  // ── Flash a save button green briefly ──
+  function flashBtn(id) {
+    const btn = document.getElementById(id);
+    btn.classList.add('success');
+    btn.textContent = 'Saved ✓';
+    setTimeout(function() {
+      btn.classList.remove('success');
+      btn.textContent = id.startsWith('salary') ? 'Save Salary'
+                      : id.startsWith('rent')   ? 'Save Rent'
+                      : 'Save';
+    }, 1400);
   }
 
   function fmt(n) {
@@ -513,6 +1120,7 @@
   }
 
   function render() {
+    // Global totals always use ALL entries (unaffected by tab filter)
     const totalIncome  = entries.filter(e => e.type === 'income').reduce((s,e) => s + e.amount, 0);
     const totalExpense = entries.filter(e => e.type === 'expense').reduce((s,e) => s + e.amount, 0);
     const balance      = totalIncome - totalExpense;
@@ -524,19 +1132,22 @@
     document.getElementById('total-income').textContent  = fmt(totalIncome);
     document.getElementById('total-expense').textContent = fmt(totalExpense);
 
+    // Apply tab filter for display
+    const displayEntries = currentTab === 'recurring'
+      ? entries.filter(e => e.recurring)
+      : entries;
+
     const container = document.getElementById('tx-container');
-    if (!entries.length) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">💳</div>
-          <p>No transactions yet.<br>Add your first one above!</p>
-        </div>`;
+    if (!displayEntries.length) {
+      container.innerHTML = currentTab === 'recurring'
+        ? `<div class="empty-state"><div class="empty-icon">🔁</div><p>No recurring transactions yet.<br>Set them up in the panel above!</p></div>`
+        : `<div class="empty-state"><div class="empty-icon">💳</div><p>No transactions yet.<br>Add your first one above!</p></div>`;
       return;
     }
 
     // Group entries by month using the id timestamp
     const groups = {};
-    entries.forEach(e => {
+    displayEntries.forEach(e => {
       const d   = new Date(e.id);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       if (!groups[key]) {
@@ -566,7 +1177,7 @@
         <div class="tx-icon ${e.type}">${ICONS[e.category] || '📌'}</div>
         <div class="tx-meta">
           <div class="tx-desc">${escHtml(e.desc)}</div>
-          <div class="tx-detail">${e.category} · ${e.date}</div>
+          <div class="tx-detail">${e.recurring ? '🔁 · ' : ''}${e.category} · ${e.date}</div>
         </div>
         <div class="tx-right">
           <span class="tx-amount ${e.type}">${e.type === 'income' ? '+' : '−'}${fmt(e.amount)}</span>
@@ -607,6 +1218,10 @@
   // Init
   populateCategories();
   render();
+  populateSalaryForm();
+  populateRentForm();
+  renderOtherRules();
+  checkAndApplyRecurring();
 
   // Allow Enter key to submit
   document.addEventListener('keydown', e => {
