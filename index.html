@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Budget Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -30,12 +31,82 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+    }
+
+    /* ── Login screen ── */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .login-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 40px 32px 36px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-logo { font-size: 2.2rem; margin-bottom: 12px; }
+    .login-card h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      margin-bottom: 6px;
+    }
+    .login-sub {
+      color: var(--text-muted);
+      font-size: .9rem;
+      margin-bottom: 28px;
+    }
+    .login-form-inner { text-align: left; }
+    .login-form-inner .form-group { margin-bottom: 12px; }
+    .magic-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: var(--blue);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .18s, transform .1s;
+      margin-top: 4px;
+    }
+    .magic-btn:hover { background: #1d4ed8; }
+    .magic-btn:active { transform: scale(.98); }
+    .magic-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .login-sent-box {
+      padding: 16px 0 4px;
+      color: var(--text-muted);
+      font-size: .92rem;
+      line-height: 1.6;
+    }
+    .login-sent-box strong { color: var(--text); }
+    .login-err {
+      margin-top: 12px;
+      font-size: .85rem;
+      color: var(--red);
+      text-align: left;
+      background: var(--red-bg);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    /* ── App layout ── */
+    #app {
       padding: 24px 16px 60px;
     }
 
     header {
       text-align: center;
       margin-bottom: 32px;
+      position: relative;
     }
     header h1 {
       font-size: 1.6rem;
@@ -48,6 +119,22 @@
       font-size: .9rem;
       margin-top: 4px;
     }
+    .signout-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      padding: 5px 11px;
+      border-radius: 7px;
+      font-family: inherit;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .signout-btn:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
 
     .container {
       max-width: 640px;
@@ -98,10 +185,7 @@
     }
     .stat.income { background: var(--green-bg); }
     .stat.expense { background: var(--red-bg); }
-    .stat-icon {
-      font-size: 1.3rem;
-      line-height: 1;
-    }
+    .stat-icon { font-size: 1.3rem; line-height: 1; }
     .stat-info { display: flex; flex-direction: column; }
     .stat-label {
       font-size: .72rem;
@@ -110,15 +194,11 @@
       letter-spacing: .07em;
       color: var(--text-muted);
     }
-    .stat-value {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -.5px;
-    }
+    .stat-value { font-size: 1.15rem; font-weight: 700; letter-spacing: -.5px; }
     .stat.income .stat-value { color: var(--green); }
     .stat.expense .stat-value { color: var(--red); }
 
-    /* ── Add entry form ── */
+    /* ── Cards & forms ── */
     .card {
       background: var(--surface);
       border-radius: var(--radius);
@@ -149,22 +229,10 @@
       transition: all .18s;
       color: var(--text-muted);
     }
-    .type-btn.active.income {
-      border-color: var(--green);
-      background: var(--green-bg);
-      color: var(--green);
-    }
-    .type-btn.active.expense {
-      border-color: var(--red);
-      background: var(--red-bg);
-      color: var(--red);
-    }
+    .type-btn.active.income  { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+    .type-btn.active.expense { border-color: var(--red);   background: var(--red-bg);   color: var(--red); }
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group.full { grid-column: 1 / -1; }
 
@@ -209,13 +277,10 @@
     }
     .add-btn:hover { background: #1d4ed8; }
     .add-btn:active { transform: scale(.98); }
+    .add-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
-    /* ── Transactions list ── */
-    .list-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+    /* ── Transaction list ── */
+    .list-header { display: flex; align-items: center; justify-content: space-between; }
     .clear-btn {
       font-size: .8rem;
       font-weight: 600;
@@ -230,20 +295,24 @@
     }
     .clear-btn:hover { background: var(--red-bg); color: var(--red); }
 
-    .empty-state {
-      text-align: center;
-      padding: 36px 0;
-      color: var(--text-muted);
-    }
+    .empty-state { text-align: center; padding: 36px 0; color: var(--text-muted); }
     .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
     .empty-state p { font-size: .9rem; }
 
-    .tx-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .loading-state { text-align: center; padding: 36px 0; color: var(--text-muted); font-size: .9rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
     }
 
+    .tx-list { display: flex; flex-direction: column; gap: 8px; }
     .tx-item {
       display: flex;
       align-items: center;
@@ -263,12 +332,9 @@
     }
 
     .tx-icon {
-      width: 36px;
-      height: 36px;
+      width: 36px; height: 36px;
       border-radius: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       font-size: 1.1rem;
       flex-shrink: 0;
     }
@@ -276,45 +342,19 @@
     .tx-icon.expense { background: var(--red-bg); }
 
     .tx-meta { flex: 1; min-width: 0; }
-    .tx-desc {
-      font-size: .95rem;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .tx-detail {
-      font-size: .78rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
+    .tx-desc { font-size: .95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tx-detail { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
 
-    .tx-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-shrink: 0;
-    }
-    .tx-amount {
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: -.3px;
-    }
+    .tx-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .tx-amount { font-size: 1rem; font-weight: 700; letter-spacing: -.3px; }
     .tx-amount.income  { color: var(--green); }
     .tx-amount.expense { color: var(--red); }
 
     .del-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 7px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      font-size: 1rem;
+      width: 28px; height: 28px;
+      border-radius: 7px; border: none; background: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 1rem;
       transition: background .15s, color .15s;
     }
     .del-btn:hover { background: var(--red-bg); color: var(--red); }
@@ -322,375 +362,375 @@
     /* ── Monthly groups ── */
     .month-group { margin-bottom: 1.25rem; }
     .month-group:last-child { margin-bottom: 0; }
-
     .month-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 6px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 6px;
       padding: 0.55rem 1rem;
       background: var(--surface-alt);
       border: 1.5px solid var(--border);
       border-radius: 10px;
       margin-bottom: 6px;
     }
-
-    .month-label {
-      font-size: .85rem;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -.2px;
-    }
-
-    .month-stats {
-      display: flex;
-      gap: 12px;
-      font-size: .78rem;
-      font-weight: 600;
-    }
+    .month-label { font-size: .85rem; font-weight: 700; color: var(--text); letter-spacing: -.2px; }
+    .month-stats { display: flex; gap: 12px; font-size: .78rem; font-weight: 600; }
     .ms-income  { color: var(--green); }
     .ms-expense { color: var(--red); }
     .ms-net     { color: var(--text-muted); }
     .ms-net.positive { color: var(--green); }
     .ms-net.negative { color: var(--red); }
 
-    /* ── Recurring notification banner ── */
-    .rec-banner {
+    /* ── Banners ── */
+    .rec-banner, .err-banner {
       max-width: 640px;
       margin: 0 auto 16px;
       padding: 12px 16px;
-      background: var(--green-bg);
-      border: 1.5px solid var(--green);
       border-radius: var(--radius);
       display: flex;
       align-items: flex-start;
       gap: 12px;
       font-size: .9rem;
-      color: #14532d;
       font-weight: 600;
     }
-    .rec-banner-text { flex: 1; line-height: 1.5; }
-    .rec-dismiss {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--green);
-      font-size: 1.1rem;
-      line-height: 1;
-      flex-shrink: 0;
-      padding: 2px;
+    .rec-banner {
+      background: var(--green-bg);
+      border: 1.5px solid var(--green);
+      color: #14532d;
     }
-    .rec-dismiss:hover { opacity: .7; }
+    .err-banner {
+      background: var(--red-bg);
+      border: 1.5px solid var(--red);
+      color: #7f1d1d;
+    }
+    .rec-banner-text, .err-banner-text { flex: 1; line-height: 1.5; }
+    .rec-dismiss {
+      background: none; border: none; cursor: pointer;
+      font-size: 1.1rem; line-height: 1; flex-shrink: 0; padding: 2px;
+      opacity: .7;
+    }
+    .rec-dismiss:hover { opacity: 1; }
 
     /* ── Transaction tabs ── */
     .tx-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
     .tx-tab {
-      padding: 7px 14px;
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-      background: var(--surface-alt);
-      font-size: .85rem;
-      font-weight: 600;
-      cursor: pointer;
-      color: var(--text-muted);
-      transition: all .15s;
-      font-family: inherit;
+      padding: 7px 14px; border-radius: 8px;
+      border: 1.5px solid var(--border); background: var(--surface-alt);
+      font-size: .85rem; font-weight: 600; cursor: pointer;
+      color: var(--text-muted); transition: all .15s; font-family: inherit;
     }
-    .tx-tab.active {
-      border-color: var(--blue);
-      background: var(--blue-bg);
-      color: var(--blue);
-    }
+    .tx-tab.active { border-color: var(--blue); background: var(--blue-bg); color: var(--blue); }
 
     /* ── Recurring settings card ── */
     .rec-card-head {
-      cursor: pointer;
-      user-select: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      cursor: pointer; user-select: none;
+      display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 0;
     }
     .rec-card-head.open { margin-bottom: 16px; }
     .rec-chevron { font-size: .9rem; color: var(--text-muted); transition: transform .2s; }
     .rec-chevron.open { transform: rotate(90deg); }
 
-    .rec-section {
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 16px;
-      margin-bottom: 12px;
-    }
+    .rec-section { border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
     .rec-section:last-child { margin-bottom: 0; }
-    .rec-section-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
+    .rec-section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .rec-section-title { font-size: .92rem; font-weight: 700; }
-    .rec-enable {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: .83rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
+    .rec-enable { display: flex; align-items: center; gap: 6px; font-size: .83rem; font-weight: 600; color: var(--text-muted); cursor: pointer; }
     .rec-enable input { width: auto; }
 
     .save-rec-btn {
-      margin-top: 12px;
-      padding: 9px 18px;
-      border-radius: 9px;
-      border: none;
-      background: var(--blue);
-      color: #fff;
-      font-size: .9rem;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      transition: background .15s;
+      margin-top: 12px; padding: 9px 18px; border-radius: 9px;
+      border: none; background: var(--blue); color: #fff;
+      font-size: .9rem; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: background .15s;
     }
     .save-rec-btn:hover { background: #1d4ed8; }
+    .save-rec-btn:disabled { opacity: .6; cursor: not-allowed; }
     .save-rec-btn.success { background: var(--green); }
 
-    /* Other recurring rules list */
     .rec-rule-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 12px;
-      background: var(--surface-alt);
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-      margin-bottom: 6px;
-      font-size: .88rem;
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 12px; background: var(--surface-alt);
+      border-radius: 8px; border: 1.5px solid var(--border);
+      margin-bottom: 6px; font-size: .88rem;
     }
     .rec-rule-info { flex: 1; min-width: 0; }
     .rec-rule-label { font-weight: 600; }
     .rec-rule-meta { font-size: .77rem; color: var(--text-muted); margin-top: 2px; }
     .rec-rule-actions { display: flex; gap: 4px; flex-shrink: 0; }
     .rec-edit-btn, .rec-del-btn {
-      width: 28px; height: 28px;
-      border-radius: 7px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: .95rem;
+      width: 28px; height: 28px; border-radius: 7px; border: none;
+      background: none; cursor: pointer; font-size: .95rem;
       display: flex; align-items: center; justify-content: center;
-      color: var(--text-muted);
-      transition: background .15s, color .15s;
+      color: var(--text-muted); transition: background .15s, color .15s;
     }
     .rec-edit-btn:hover { background: var(--blue-bg); color: var(--blue); }
     .rec-del-btn:hover  { background: var(--red-bg);  color: var(--red); }
 
-    .rec-add-form {
-      border-top: 1.5px solid var(--border);
-      margin-top: 12px;
-      padding-top: 12px;
-    }
-    .rec-add-title {
-      font-size: .78rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      margin-bottom: 10px;
-    }
+    .rec-add-form { border-top: 1.5px solid var(--border); margin-top: 12px; padding-top: 12px; }
+    .rec-add-title { font-size: .78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
-<!-- Recurring notification banner (hidden until triggered) -->
-<div id="rec-banner" class="rec-banner" style="display:none">
-  <span class="rec-banner-text" id="rec-banner-text"></span>
-  <button class="rec-dismiss" onclick="dismissBanner()" title="Dismiss">✕</button>
+<!-- ── Login screen (shown when unauthenticated) ── -->
+<div id="login-screen" style="display:none">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">💳</div>
+      <h1>Budget Tracker</h1>
+      <p class="login-sub">Sign in to access your transactions</p>
+      <div id="login-form" class="login-form-inner">
+        <div class="form-group">
+          <label for="login-email">Email address</label>
+          <input type="email" id="login-email" placeholder="you@example.com" />
+        </div>
+        <button class="magic-btn" id="magic-btn" onclick="sendMagicLink()">Send magic link</button>
+      </div>
+      <div id="login-sent" class="login-sent-box" style="display:none">
+        ✉️ Check your email for a login link.<br>
+        <strong>You can close this tab and click the link from any device.</strong>
+      </div>
+      <div id="login-err" class="login-err" style="display:none"></div>
+    </div>
+  </div>
 </div>
 
-<header>
-  <h1>Budget Tracker</h1>
-  <p>Keep tabs on your income &amp; expenses</p>
-</header>
+<!-- ── App (shown when authenticated) ── -->
+<div id="app" style="display:none">
 
-<div class="container">
-
-  <!-- Balance -->
-  <div class="balance-card">
-    <div class="balance-label">Current Balance</div>
-    <div class="balance-amount zero" id="balance">$0.00</div>
-    <div class="stats">
-      <div class="stat income">
-        <div class="stat-icon">↑</div>
-        <div class="stat-info">
-          <span class="stat-label">Income</span>
-          <span class="stat-value" id="total-income">$0.00</span>
-        </div>
-      </div>
-      <div class="stat expense">
-        <div class="stat-icon">↓</div>
-        <div class="stat-info">
-          <span class="stat-label">Expenses</span>
-          <span class="stat-value" id="total-expense">$0.00</span>
-        </div>
-      </div>
-    </div>
+  <!-- Error banner -->
+  <div id="err-banner" class="err-banner" style="display:none">
+    <span class="err-banner-text" id="err-banner-text"></span>
+    <button class="rec-dismiss" onclick="dismissError()" title="Dismiss">✕</button>
   </div>
 
-  <!-- Add Entry -->
-  <div class="card">
-    <div class="card-title">Add Transaction</div>
-
-    <div class="type-toggle">
-      <button class="type-btn active income" id="btn-income" onclick="setType('income')">
-        ↑ Income
-      </button>
-      <button class="type-btn expense" id="btn-expense" onclick="setType('expense')">
-        ↓ Expense
-      </button>
-    </div>
-
-    <div class="form-grid">
-      <div class="form-group full">
-        <label for="desc">Description</label>
-        <input type="text" id="desc" placeholder="e.g. Freelance payment" maxlength="60" />
-      </div>
-      <div class="form-group">
-        <label for="amount">Amount ($)</label>
-        <input type="number" id="amount" placeholder="0.00" min="0.01" step="0.01" />
-      </div>
-      <div class="form-group">
-        <label for="category">Category</label>
-        <select id="category"></select>
-      </div>
-    </div>
-
-    <button class="add-btn" onclick="addEntry()">Add Transaction</button>
+  <!-- Recurring notification banner -->
+  <div id="rec-banner" class="rec-banner" style="display:none">
+    <span class="rec-banner-text" id="rec-banner-text"></span>
+    <button class="rec-dismiss" onclick="dismissBanner()" title="Dismiss">✕</button>
   </div>
 
-  <!-- Recurring Settings -->
-  <div class="card">
-    <div class="card-title rec-card-head" id="rec-card-head" onclick="toggleRecurringPanel()">
-      <span>🔁 Recurring Transactions</span>
-      <span class="rec-chevron" id="rec-chevron">▸</span>
+  <header>
+    <h1>Budget Tracker</h1>
+    <p>Keep tabs on your income &amp; expenses</p>
+    <button class="signout-btn" onclick="signOut()">Sign out</button>
+  </header>
+
+  <div class="container">
+
+    <!-- Balance -->
+    <div class="balance-card">
+      <div class="balance-label">Current Balance</div>
+      <div class="balance-amount zero" id="balance">$0.00</div>
+      <div class="stats">
+        <div class="stat income">
+          <div class="stat-icon">↑</div>
+          <div class="stat-info">
+            <span class="stat-label">Income</span>
+            <span class="stat-value" id="total-income">$0.00</span>
+          </div>
+        </div>
+        <div class="stat expense">
+          <div class="stat-icon">↓</div>
+          <div class="stat-info">
+            <span class="stat-label">Expenses</span>
+            <span class="stat-value" id="total-expense">$0.00</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div id="rec-panel" style="display:none">
 
-      <!-- Salary -->
-      <div class="rec-section">
-        <div class="rec-section-head">
-          <span class="rec-section-title">💼 Salary</span>
-          <label class="rec-enable">
-            <input type="checkbox" id="salary-enabled"> Enable
-          </label>
-        </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="salary-label">Label</label>
-            <input type="text" id="salary-label" placeholder="Salary" maxlength="40" />
-          </div>
-          <div class="form-group">
-            <label for="salary-amount">Amount ($)</label>
-            <input type="number" id="salary-amount" placeholder="0.00" min="0.01" step="0.01" />
-          </div>
-          <div class="form-group full">
-            <label for="salary-timing">When to add each month</label>
-            <select id="salary-timing" onchange="updateSalaryTimingUI()">
-              <option value="last-working-day">Last working day (Mon–Fri)</option>
-              <option value="specific-day">Specific day of month</option>
-            </select>
-          </div>
-          <div class="form-group" id="salary-day-group" style="display:none">
-            <label for="salary-day">Day of month</label>
-            <input type="number" id="salary-day" min="1" max="31" placeholder="25" />
-          </div>
-        </div>
-        <button class="save-rec-btn" id="salary-save-btn" onclick="saveSalary()">Save Salary</button>
+    <!-- Add Entry -->
+    <div class="card">
+      <div class="card-title">Add Transaction</div>
+      <div class="type-toggle">
+        <button class="type-btn active income" id="btn-income" onclick="setType('income')">↑ Income</button>
+        <button class="type-btn expense"       id="btn-expense" onclick="setType('expense')">↓ Expense</button>
       </div>
-
-      <!-- Rent -->
-      <div class="rec-section">
-        <div class="rec-section-head">
-          <span class="rec-section-title">🏠 Rent</span>
-          <label class="rec-enable">
-            <input type="checkbox" id="rent-enabled"> Enable
-          </label>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label for="desc">Description</label>
+          <input type="text" id="desc" placeholder="e.g. Freelance payment" maxlength="60" />
         </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="rent-amount">Amount ($)</label>
-            <input type="number" id="rent-amount" placeholder="0.00" min="0.01" step="0.01" />
-          </div>
-          <div class="form-group">
-            <label for="rent-day">Day of month</label>
-            <input type="number" id="rent-day" min="1" max="31" value="1" />
-          </div>
+        <div class="form-group">
+          <label for="amount">Amount ($)</label>
+          <input type="number" id="amount" placeholder="0.00" min="0.01" step="0.01" />
         </div>
-        <button class="save-rec-btn" id="rent-save-btn" onclick="saveRent()">Save Rent</button>
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category"></select>
+        </div>
       </div>
+      <button class="add-btn" id="add-btn" onclick="addEntry()">Add Transaction</button>
+    </div>
 
-      <!-- Other recurring -->
-      <div class="rec-section">
-        <div class="rec-section-head">
-          <span class="rec-section-title">📋 Other Recurring</span>
-        </div>
-        <div id="other-rules-list"></div>
-        <div class="rec-add-form">
-          <div class="rec-add-title" id="other-add-title">Add recurring transaction</div>
+    <!-- Recurring Settings -->
+    <div class="card">
+      <div class="card-title rec-card-head" id="rec-card-head" onclick="toggleRecurringPanel()">
+        <span>🔁 Recurring Transactions</span>
+        <span class="rec-chevron" id="rec-chevron">▸</span>
+      </div>
+      <div id="rec-panel" style="display:none">
+
+        <!-- Salary -->
+        <div class="rec-section">
+          <div class="rec-section-head">
+            <span class="rec-section-title">💼 Salary</span>
+            <label class="rec-enable">
+              <input type="checkbox" id="salary-enabled"> Enable
+            </label>
+          </div>
           <div class="form-grid">
-            <div class="form-group full">
-              <label for="other-label">Label</label>
-              <input type="text" id="other-label" placeholder="e.g. Netflix" maxlength="40" />
+            <div class="form-group">
+              <label for="salary-label">Label</label>
+              <input type="text" id="salary-label" placeholder="Salary" maxlength="40" />
             </div>
             <div class="form-group">
-              <label for="other-amount">Amount ($)</label>
-              <input type="number" id="other-amount" placeholder="0.00" min="0.01" step="0.01" />
-            </div>
-            <div class="form-group">
-              <label for="other-day">Day of month</label>
-              <input type="number" id="other-day" min="1" max="31" placeholder="1" />
+              <label for="salary-amount">Amount ($)</label>
+              <input type="number" id="salary-amount" placeholder="0.00" min="0.01" step="0.01" />
             </div>
             <div class="form-group full">
-              <label>Type</label>
-              <div class="type-toggle">
-                <button class="type-btn active expense" id="other-btn-expense" onclick="setOtherType('expense')">↓ Expense</button>
-                <button class="type-btn income"         id="other-btn-income"  onclick="setOtherType('income')">↑ Income</button>
+              <label for="salary-timing">When to add each month</label>
+              <select id="salary-timing" onchange="updateSalaryTimingUI()">
+                <option value="last-working-day">Last working day (Mon–Fri)</option>
+                <option value="specific-day">Specific day of month</option>
+              </select>
+            </div>
+            <div class="form-group" id="salary-day-group" style="display:none">
+              <label for="salary-day">Day of month</label>
+              <input type="number" id="salary-day" min="1" max="31" placeholder="25" />
+            </div>
+          </div>
+          <button class="save-rec-btn" id="salary-save-btn" onclick="saveSalary()">Save Salary</button>
+        </div>
+
+        <!-- Rent -->
+        <div class="rec-section">
+          <div class="rec-section-head">
+            <span class="rec-section-title">🏠 Rent</span>
+            <label class="rec-enable">
+              <input type="checkbox" id="rent-enabled"> Enable
+            </label>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="rent-amount">Amount ($)</label>
+              <input type="number" id="rent-amount" placeholder="0.00" min="0.01" step="0.01" />
+            </div>
+            <div class="form-group">
+              <label for="rent-day">Day of month</label>
+              <input type="number" id="rent-day" min="1" max="31" value="1" />
+            </div>
+          </div>
+          <button class="save-rec-btn" id="rent-save-btn" onclick="saveRent()">Save Rent</button>
+        </div>
+
+        <!-- Other recurring -->
+        <div class="rec-section">
+          <div class="rec-section-head">
+            <span class="rec-section-title">📋 Other Recurring</span>
+          </div>
+          <div id="other-rules-list"></div>
+          <div class="rec-add-form">
+            <div class="rec-add-title" id="other-add-title">Add recurring transaction</div>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label for="other-label">Label</label>
+                <input type="text" id="other-label" placeholder="e.g. Netflix" maxlength="40" />
+              </div>
+              <div class="form-group">
+                <label for="other-amount">Amount ($)</label>
+                <input type="number" id="other-amount" placeholder="0.00" min="0.01" step="0.01" />
+              </div>
+              <div class="form-group">
+                <label for="other-day">Day of month</label>
+                <input type="number" id="other-day" min="1" max="31" placeholder="1" />
+              </div>
+              <div class="form-group full">
+                <label>Type</label>
+                <div class="type-toggle">
+                  <button class="type-btn active expense" id="other-btn-expense" onclick="setOtherType('expense')">↓ Expense</button>
+                  <button class="type-btn income"         id="other-btn-income"  onclick="setOtherType('income')">↑ Income</button>
+                </div>
               </div>
             </div>
-          </div>
-          <div style="display:flex;gap:8px;margin-top:12px">
-            <button class="save-rec-btn" id="other-save-btn" onclick="saveOther()">Add</button>
-            <button class="save-rec-btn" id="other-cancel-btn" onclick="cancelEditOther()" style="display:none;background:var(--text-muted)">Cancel</button>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="save-rec-btn" id="other-save-btn" onclick="saveOther()">Add</button>
+              <button class="save-rec-btn" id="other-cancel-btn" onclick="cancelEditOther()" style="display:none;background:var(--text-muted)">Cancel</button>
+            </div>
           </div>
         </div>
+
       </div>
-
     </div>
-  </div>
 
-  <!-- Transaction List -->
-  <div class="card">
-    <div class="list-header card-title">
-      Transactions
-      <button class="clear-btn" onclick="clearAll()">Clear all</button>
+    <!-- Transaction List -->
+    <div class="card">
+      <div class="list-header card-title">
+        Transactions
+        <button class="clear-btn" onclick="clearAll()">Clear all</button>
+      </div>
+      <div class="tx-tabs">
+        <button class="tx-tab active" id="tab-all" onclick="setTxTab('all')">All</button>
+        <button class="tx-tab" id="tab-rec" onclick="setTxTab('recurring')">🔁 Recurring</button>
+      </div>
+      <div id="tx-container"></div>
     </div>
-    <div class="tx-tabs">
-      <button class="tx-tab active" id="tab-all" onclick="setTxTab('all')">All</button>
-      <button class="tx-tab" id="tab-rec" onclick="setTxTab('recurring')">🔁 Recurring</button>
-    </div>
-    <div id="tx-container"></div>
-  </div>
 
-</div>
+  </div><!-- /.container -->
+</div><!-- /#app -->
 
 <script>
+/*
+ * ─────────────────────────────────────────────────────────────
+ *  SUPABASE SETUP — run this SQL once in your Supabase SQL editor
+ * ─────────────────────────────────────────────────────────────
+ *
+ *  create table transactions (
+ *    id            uuid        default gen_random_uuid() primary key,
+ *    user_id       uuid        references auth.users not null,
+ *    amount        numeric     not null,
+ *    label         text        not null,
+ *    category      text        not null,
+ *    type          text        not null check (type in ('income','expense')),
+ *    date          text        not null,
+ *    tx_date       date        not null,
+ *    is_recurring  boolean     default false,
+ *    recurring_rule text,
+ *    created_at    timestamptz default now()
+ *  );
+ *  alter table transactions enable row level security;
+ *  create policy "own_transactions" on transactions
+ *    for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+ *
+ *  create table recurring_rules (
+ *    id            uuid        default gen_random_uuid() primary key,
+ *    user_id       uuid        references auth.users not null,
+ *    label         text        not null,
+ *    amount        numeric     not null,
+ *    day           integer,
+ *    rule_type     text        not null check (rule_type in ('salary','rent','custom')),
+ *    schedule_type text        check (schedule_type in ('last_working_day','specific_day')),
+ *    is_income     boolean     default false,
+ *    enabled       boolean     default true,
+ *    created_ym    text,
+ *    created_at    timestamptz default now()
+ *  );
+ *  alter table recurring_rules enable row level security;
+ *  create policy "own_recurring_rules" on recurring_rules
+ *    for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+ *
+ * ─────────────────────────────────────────────────────────────
+ */
+
+  const SUPABASE_URL      = 'https://qukhknmmcvcmuvelijoi.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_SR4G7L_3fFQU1sy9GDpQCw_Ziu9RqTN';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ── Constants ──
   const CATEGORIES = {
     income:  ['Salary','Freelance','Investment','Gift','Refund','Other'],
     expense: ['Food','Housing','Transport','Healthcare','Entertainment','Shopping','Utilities','Education','Other']
   };
-
   const ICONS = {
     Salary:'💼', Freelance:'💻', Investment:'📈', Gift:'🎁', Refund:'↩️',
     Food:'🍔', Housing:'🏠', Transport:'🚗', Healthcare:'💊',
@@ -698,32 +738,153 @@
     Other:'📌'
   };
 
-  let entries = JSON.parse(localStorage.getItem('budget-entries') || '[]');
-  let currentType = 'income';
+  // ── State ──
+  let currentUser    = null;
+  let entries        = [];
+  let recurringConfig = buildRecurringConfig([]);  // populated after loadData
+  let currentType    = 'income';
+  let currentTab     = 'all';
+  let editingOtherId = null;
+  let otherFormType  = 'expense';
+  let appLoaded      = false;
 
-  // ── Recurring state ──
-  let recurringConfig = JSON.parse(localStorage.getItem('budget-recurring-config') || JSON.stringify({
-    salary: { enabled: false, label: 'Salary', amount: 0, timing: 'last-working-day', day: 25, createdYM: null },
-    rent:   { enabled: false, amount: 0, day: 1, createdYM: null },
-    others: []
-  }));
-  let recurringLog = JSON.parse(localStorage.getItem('budget-recurring-log') || '{}');
-  let currentTab       = 'all';
-  let editingOtherId   = null;   // null = adding new; set to rule.id when editing
-  let otherFormType    = 'expense';
+  // ── Auth ──────────────────────────────────────────────────────
 
-  function save() {
-    localStorage.setItem('budget-entries', JSON.stringify(entries));
+  function showLoginScreen() {
+    document.getElementById('login-screen').style.display = '';
+    document.getElementById('app').style.display = 'none';
   }
 
-  function saveRecurringConfig() {
-    localStorage.setItem('budget-recurring-config', JSON.stringify(recurringConfig));
-  }
-  function saveRecurringLog() {
-    localStorage.setItem('budget-recurring-log', JSON.stringify(recurringLog));
+  function showApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = '';
   }
 
-  // ── Date helpers ──
+  async function sendMagicLink() {
+    const email = document.getElementById('login-email').value.trim();
+    if (!email) { shake('login-email'); return; }
+
+    const btn = document.getElementById('magic-btn');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    document.getElementById('login-err').style.display = 'none';
+
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href }
+    });
+
+    if (error) {
+      document.getElementById('login-err').textContent = error.message;
+      document.getElementById('login-err').style.display = '';
+      btn.disabled = false;
+      btn.textContent = 'Send magic link';
+    } else {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('login-sent').style.display = '';
+    }
+  }
+
+  async function signOut() {
+    await sb.auth.signOut();
+    // onAuthStateChange handles reset + showLoginScreen
+  }
+
+  // ── Error banner ──────────────────────────────────────────────
+
+  function showError(msg) {
+    document.getElementById('err-banner-text').textContent = msg;
+    document.getElementById('err-banner').style.display = 'flex';
+  }
+  function dismissError() {
+    document.getElementById('err-banner').style.display = 'none';
+  }
+
+  // ── Loading state ─────────────────────────────────────────────
+
+  function setLoading(on) {
+    document.getElementById('tx-container').innerHTML = on
+      ? '<div class="loading-state"><span class="loading-spinner"></span>Loading…</div>'
+      : '';
+  }
+
+  // ── Data loading ──────────────────────────────────────────────
+
+  async function loadData() {
+    setLoading(true);
+    dismissError();
+
+    const [txRes, rulesRes] = await Promise.all([
+      sb.from('transactions')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('tx_date', { ascending: false })
+        .order('created_at', { ascending: false }),
+      sb.from('recurring_rules')
+        .select('*')
+        .eq('user_id', currentUser.id)
+    ]);
+
+    if (txRes.error) {
+      showError('Failed to load transactions: ' + txRes.error.message);
+      setLoading(false);
+      return;
+    }
+    if (rulesRes.error) {
+      showError('Failed to load recurring rules: ' + rulesRes.error.message);
+      setLoading(false);
+      return;
+    }
+
+    entries        = (txRes.data   || []).map(normaliseEntry);
+    recurringConfig = buildRecurringConfig(rulesRes.data || []);
+
+    populateSalaryForm();
+    populateRentForm();
+    renderOtherRules();
+    setLoading(false);
+    render();
+  }
+
+  // Supabase returns numeric columns as strings; normalise amount to Number.
+  function normaliseEntry(e) {
+    return { ...e, amount: parseFloat(e.amount) };
+  }
+
+  function buildRecurringConfig(rows) {
+    const sal   = rows.find(r => r.rule_type === 'salary');
+    const rent  = rows.find(r => r.rule_type === 'rent');
+    const others = rows.filter(r => r.rule_type === 'custom');
+    return {
+      salary: sal ? {
+        dbId:      sal.id,
+        enabled:   sal.enabled,
+        label:     sal.label,
+        amount:    parseFloat(sal.amount),
+        timing:    sal.schedule_type === 'last_working_day' ? 'last-working-day' : 'specific-day',
+        day:       sal.day || 25,
+        createdYM: sal.created_ym
+      } : { dbId: null, enabled: false, label: 'Salary', amount: 0, timing: 'last-working-day', day: 25, createdYM: null },
+      rent: rent ? {
+        dbId:      rent.id,
+        enabled:   rent.enabled,
+        amount:    parseFloat(rent.amount),
+        day:       rent.day || 1,
+        createdYM: rent.created_ym
+      } : { dbId: null, enabled: false, amount: 0, day: 1, createdYM: null },
+      others: others.map(r => ({
+        id:        r.id,
+        label:     r.label,
+        amount:    parseFloat(r.amount),
+        day:       r.day || 1,
+        type:      r.is_income ? 'income' : 'expense',
+        createdYM: r.created_ym
+      }))
+    };
+  }
+
+  // ── Date helpers ──────────────────────────────────────────────
+
   function toYM(date) {
     return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
   }
@@ -736,12 +897,20 @@
     return d;
   }
 
-  // ── Recurring check engine ──
-  function checkAndApplyRecurring() {
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const added = [];
+  // ── Recurring check engine ────────────────────────────────────
 
-    // Check the last 7 months (6 back + current) to catch missed payments
+  async function checkAndApplyRecurring() {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const toInsert = [];
+    const added    = [];
+
+    // Build dedup log from already-loaded entries
+    const recurringLog = {};
+    entries.filter(e => e.is_recurring && e.recurring_rule).forEach(e => {
+      const ym = e.tx_date.substring(0, 7);
+      recurringLog[e.recurring_rule + '-' + ym] = true;
+    });
+
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
       const y = d.getFullYear(), m = d.getMonth();
@@ -755,17 +924,13 @@
           const due = sal.timing === 'last-working-day'
             ? lastWorkingDay(y, m)
             : new Date(y, m, clampDay(y, m, sal.day));
-          due.setHours(8, 0, 0, 0);
           if (due <= today) {
-            entries.push({
-              id: due.getTime(),
-              type: 'income',
-              desc: sal.label || 'Salary',
-              amount: sal.amount,
-              category: 'Salary',
-              date: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-              recurring: true,
-              recurringRule: 'salary'
+            const txDate = due.toISOString().split('T')[0];
+            toInsert.push({
+              user_id: currentUser.id, type: 'income',
+              label: sal.label || 'Salary', amount: sal.amount, category: 'Salary',
+              date: due.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }),
+              tx_date: txDate, is_recurring: true, recurring_rule: 'salary'
             });
             recurringLog[logKey] = true;
             added.push((sal.label || 'Salary') + ' ' + fmt(sal.amount));
@@ -779,17 +944,13 @@
         const logKey = 'rent-' + ym;
         if (!recurringLog[logKey]) {
           const due = new Date(y, m, clampDay(y, m, rent.day));
-          due.setHours(9, 0, 0, 0);
           if (due <= today) {
-            entries.push({
-              id: due.getTime(),
-              type: 'expense',
-              desc: 'Rent',
-              amount: rent.amount,
-              category: 'Housing',
-              date: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-              recurring: true,
-              recurringRule: 'rent'
+            const txDate = due.toISOString().split('T')[0];
+            toInsert.push({
+              user_id: currentUser.id, type: 'expense',
+              label: 'Rent', amount: rent.amount, category: 'Housing',
+              date: due.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }),
+              tx_date: txDate, is_recurring: true, recurring_rule: 'rent'
             });
             recurringLog[logKey] = true;
             added.push('Rent ' + fmt(rent.amount));
@@ -798,22 +959,18 @@
       }
 
       // ── Others ──
-      recurringConfig.others.forEach(function(rule) {
+      recurringConfig.others.forEach(rule => {
         if (!rule.createdYM || ym < rule.createdYM) return;
         const logKey = 'other-' + rule.id + '-' + ym;
         if (!recurringLog[logKey]) {
           const due = new Date(y, m, clampDay(y, m, rule.day));
-          due.setHours(10, 0, 0, rule.id % 1000);
           if (due <= today) {
-            entries.push({
-              id: due.getTime(),
-              type: rule.type,
-              desc: rule.label,
-              amount: rule.amount,
-              category: 'Other',
-              date: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-              recurring: true,
-              recurringRule: 'other-' + rule.id
+            const txDate = due.toISOString().split('T')[0];
+            toInsert.push({
+              user_id: currentUser.id, type: rule.type,
+              label: rule.label, amount: rule.amount, category: 'Other',
+              date: due.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }),
+              tx_date: txDate, is_recurring: true, recurring_rule: 'other-' + rule.id
             });
             recurringLog[logKey] = true;
             added.push(rule.label + ' ' + fmt(rule.amount));
@@ -822,17 +979,21 @@
       });
     }
 
-    if (added.length) {
-      entries.sort(function(a, b) { return b.id - a.id; });
-      save();
-      saveRecurringLog();
-      const count = added.length;
-      showBanner('✅ ' + count + ' recurring transaction' + (count > 1 ? 's' : '') + ' added: ' + added.join(', '));
-      render();
-    }
+    if (!toInsert.length) return;
+
+    const { data, error } = await sb.from('transactions').insert(toInsert).select();
+    if (error) { showError('Failed to add recurring transactions: ' + error.message); return; }
+
+    const newEntries = (data || []).map(normaliseEntry);
+    entries = entries.concat(newEntries).sort((a, b) => b.tx_date.localeCompare(a.tx_date));
+
+    const count = added.length;
+    showBanner('✅ ' + count + ' recurring transaction' + (count > 1 ? 's' : '') + ' added: ' + added.join(', '));
+    render();
   }
 
-  // ── Notification banner ──
+  // ── Notification banner ───────────────────────────────────────
+
   function showBanner(text) {
     document.getElementById('rec-banner-text').textContent = text;
     document.getElementById('rec-banner').style.display = 'flex';
@@ -841,18 +1002,20 @@
     document.getElementById('rec-banner').style.display = 'none';
   }
 
-  // ── Recurring settings panel toggle ──
+  // ── Recurring settings panel ──────────────────────────────────
+
   function toggleRecurringPanel() {
     const panel   = document.getElementById('rec-panel');
     const chevron = document.getElementById('rec-chevron');
     const head    = document.getElementById('rec-card-head');
     const open    = panel.style.display === 'none';
-    panel.style.display   = open ? '' : 'none';
+    panel.style.display = open ? '' : 'none';
     chevron.classList.toggle('open', open);
     head.classList.toggle('open', open);
   }
 
-  // ── Salary form ──
+  // ── Salary form ───────────────────────────────────────────────
+
   function populateSalaryForm() {
     const sal = recurringConfig.salary;
     document.getElementById('salary-enabled').checked = sal.enabled;
@@ -862,12 +1025,13 @@
     document.getElementById('salary-day').value       = sal.day || '';
     updateSalaryTimingUI();
   }
+
   function updateSalaryTimingUI() {
-    const timing = document.getElementById('salary-timing').value;
     document.getElementById('salary-day-group').style.display =
-      timing === 'specific-day' ? '' : 'none';
+      document.getElementById('salary-timing').value === 'specific-day' ? '' : 'none';
   }
-  function saveSalary() {
+
+  async function saveSalary() {
     const enabled = document.getElementById('salary-enabled').checked;
     const label   = document.getElementById('salary-label').value.trim() || 'Salary';
     const amount  = parseFloat(document.getElementById('salary-amount').value);
@@ -879,63 +1043,106 @@
       if (timing === 'specific-day' && (!day || day < 1 || day > 31)) { shake('salary-day'); return; }
     }
 
-    const wasEnabled  = recurringConfig.salary.enabled;
+    const wasEnabled   = recurringConfig.salary.enabled;
     const hadCreatedYM = recurringConfig.salary.createdYM;
+    const newCreatedYM = enabled
+      ? (hadCreatedYM && wasEnabled ? hadCreatedYM : toYM(new Date()))
+      : (hadCreatedYM || null);
 
-    recurringConfig.salary = {
-      enabled,
+    const rowData = {
+      user_id:       currentUser.id,
+      rule_type:     'salary',
       label,
-      amount: amount || 0,
-      timing,
-      day: day || 25,
-      // Set createdYM the first time it's enabled, or reset it if re-enabling after being off
-      createdYM: enabled
-        ? (hadCreatedYM && wasEnabled ? hadCreatedYM : toYM(new Date()))
-        : (hadCreatedYM || null)
+      amount:        amount || 0,
+      day:           timing === 'specific-day' ? (day || 25) : null,
+      schedule_type: timing === 'last-working-day' ? 'last_working_day' : 'specific_day',
+      is_income:     true,
+      enabled,
+      created_ym:    newCreatedYM
     };
-    saveRecurringConfig();
-    flashBtn('salary-save-btn');
+
+    const btn = document.getElementById('salary-save-btn');
+    btn.disabled = true;
+    try {
+      let dbId = recurringConfig.salary.dbId;
+      if (dbId) {
+        const { error } = await sb.from('recurring_rules').update(rowData).eq('id', dbId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await sb.from('recurring_rules').insert(rowData).select().single();
+        if (error) throw error;
+        dbId = data.id;
+      }
+      recurringConfig.salary = { dbId, enabled, label, amount: amount || 0, timing, day: day || 25, createdYM: newCreatedYM };
+      flashBtn('salary-save-btn');
+    } catch (err) {
+      showError('Failed to save salary: ' + err.message);
+    } finally {
+      btn.disabled = false;
+    }
   }
 
-  // ── Rent form ──
+  // ── Rent form ─────────────────────────────────────────────────
+
   function populateRentForm() {
     const rent = recurringConfig.rent;
     document.getElementById('rent-enabled').checked = rent.enabled;
     document.getElementById('rent-amount').value    = rent.amount || '';
     document.getElementById('rent-day').value       = rent.day || 1;
   }
-  function saveRent() {
+
+  async function saveRent() {
     const enabled = document.getElementById('rent-enabled').checked;
     const amount  = parseFloat(document.getElementById('rent-amount').value);
     const day     = parseInt(document.getElementById('rent-day').value, 10) || 1;
 
-    if (enabled) {
-      if (!amount || amount <= 0) { shake('rent-amount'); return; }
-    }
+    if (enabled && (!amount || amount <= 0)) { shake('rent-amount'); return; }
 
     const wasEnabled   = recurringConfig.rent.enabled;
     const hadCreatedYM = recurringConfig.rent.createdYM;
+    const newCreatedYM = enabled
+      ? (hadCreatedYM && wasEnabled ? hadCreatedYM : toYM(new Date()))
+      : (hadCreatedYM || null);
 
-    recurringConfig.rent = {
-      enabled,
-      amount: amount || 0,
+    const rowData = {
+      user_id:       currentUser.id,
+      rule_type:     'rent',
+      label:         'Rent',
+      amount:        amount || 0,
       day,
-      createdYM: enabled
-        ? (hadCreatedYM && wasEnabled ? hadCreatedYM : toYM(new Date()))
-        : (hadCreatedYM || null)
+      schedule_type: null,
+      is_income:     false,
+      enabled,
+      created_ym:    newCreatedYM
     };
-    saveRecurringConfig();
-    flashBtn('rent-save-btn');
+
+    const btn = document.getElementById('rent-save-btn');
+    btn.disabled = true;
+    try {
+      let dbId = recurringConfig.rent.dbId;
+      if (dbId) {
+        const { error } = await sb.from('recurring_rules').update(rowData).eq('id', dbId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await sb.from('recurring_rules').insert(rowData).select().single();
+        if (error) throw error;
+        dbId = data.id;
+      }
+      recurringConfig.rent = { dbId, enabled, amount: amount || 0, day, createdYM: newCreatedYM };
+      flashBtn('rent-save-btn');
+    } catch (err) {
+      showError('Failed to save rent: ' + err.message);
+    } finally {
+      btn.disabled = false;
+    }
   }
 
-  // ── Other recurring rules ──
+  // ── Other recurring rules ─────────────────────────────────────
+
   function renderOtherRules() {
     const list = document.getElementById('other-rules-list');
-    if (!recurringConfig.others.length) {
-      list.innerHTML = '';
-      return;
-    }
-    list.innerHTML = recurringConfig.others.map(function(rule) {
+    if (!recurringConfig.others.length) { list.innerHTML = ''; return; }
+    list.innerHTML = recurringConfig.others.map(rule => {
       const typeLabel = rule.type === 'income'
         ? '<span style="color:var(--green)">↑ Income</span>'
         : '<span style="color:var(--red)">↓ Expense</span>';
@@ -945,8 +1152,8 @@
           '<div class="rec-rule-meta">' + typeLabel + ' · ' + fmt(rule.amount) + ' · Day ' + rule.day + '</div>' +
         '</div>' +
         '<div class="rec-rule-actions">' +
-          '<button class="rec-edit-btn" onclick="editOther(' + rule.id + ')" title="Edit">✎</button>' +
-          '<button class="rec-del-btn"  onclick="deleteOther(' + rule.id + ')" title="Delete">✕</button>' +
+          '<button class="rec-edit-btn" onclick="editOther(\'' + rule.id + '\')" title="Edit">✎</button>' +
+          '<button class="rec-del-btn"  onclick="deleteOther(\'' + rule.id + '\')" title="Delete">✕</button>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -960,68 +1167,72 @@
     document.getElementById('other-btn-expense').classList.toggle('expense', type === 'expense');
   }
 
-  function saveOther() {
+  async function saveOther() {
     const label  = document.getElementById('other-label').value.trim();
     const amount = parseFloat(document.getElementById('other-amount').value);
     const day    = parseInt(document.getElementById('other-day').value, 10);
 
-    if (!label)                       { shake('other-label');  return; }
-    if (!amount || amount <= 0)       { shake('other-amount'); return; }
-    if (!day || day < 1 || day > 31)  { shake('other-day');    return; }
+    if (!label)                      { shake('other-label');  return; }
+    if (!amount || amount <= 0)      { shake('other-amount'); return; }
+    if (!day || day < 1 || day > 31) { shake('other-day');    return; }
 
-    if (editingOtherId !== null) {
-      // Update existing rule, preserving createdYM
-      const idx = recurringConfig.others.findIndex(function(r) { return r.id === editingOtherId; });
-      if (idx !== -1) {
-        recurringConfig.others[idx] = {
-          id:        recurringConfig.others[idx].id,
-          label,
-          amount,
-          day,
-          type:      otherFormType,
-          createdYM: recurringConfig.others[idx].createdYM
-        };
+    const btn = document.getElementById('other-save-btn');
+    btn.disabled = true;
+    try {
+      if (editingOtherId !== null) {
+        const { error } = await sb.from('recurring_rules')
+          .update({ label, amount, day, is_income: otherFormType === 'income' })
+          .eq('id', editingOtherId)
+          .eq('user_id', currentUser.id);
+        if (error) throw error;
+        const idx = recurringConfig.others.findIndex(r => r.id === editingOtherId);
+        if (idx !== -1) recurringConfig.others[idx] = { ...recurringConfig.others[idx], label, amount, day, type: otherFormType };
+      } else {
+        const newCreatedYM = toYM(new Date());
+        const { data, error } = await sb.from('recurring_rules').insert({
+          user_id: currentUser.id, rule_type: 'custom',
+          label, amount, day,
+          is_income: otherFormType === 'income',
+          enabled: true, created_ym: newCreatedYM, schedule_type: null
+        }).select().single();
+        if (error) throw error;
+        recurringConfig.others.push({ id: data.id, label, amount, day, type: otherFormType, createdYM: newCreatedYM });
       }
-    } else {
-      recurringConfig.others.push({
-        id:        Date.now(),
-        label,
-        amount,
-        day,
-        type:      otherFormType,
-        createdYM: toYM(new Date())
-      });
+      renderOtherRules();
+      clearOtherForm();
+    } catch (err) {
+      showError('Failed to save rule: ' + err.message);
+    } finally {
+      btn.disabled = false;
     }
-
-    saveRecurringConfig();
-    renderOtherRules();
-    clearOtherForm();
   }
 
   function editOther(id) {
-    const rule = recurringConfig.others.find(function(r) { return r.id === id; });
+    const rule = recurringConfig.others.find(r => r.id === id);
     if (!rule) return;
     editingOtherId = id;
     document.getElementById('other-label').value  = rule.label;
     document.getElementById('other-amount').value = rule.amount;
     document.getElementById('other-day').value    = rule.day;
     setOtherType(rule.type);
-    document.getElementById('other-add-title').textContent = 'Edit recurring transaction';
-    document.getElementById('other-save-btn').textContent  = 'Save';
+    document.getElementById('other-add-title').textContent    = 'Edit recurring transaction';
+    document.getElementById('other-save-btn').textContent     = 'Save';
     document.getElementById('other-cancel-btn').style.display = '';
   }
 
-  function deleteOther(id) {
-    recurringConfig.others = recurringConfig.others.filter(function(r) { return r.id !== id; });
-    saveRecurringConfig();
-    renderOtherRules();
-    if (editingOtherId === id) cancelEditOther();
+  async function deleteOther(id) {
+    try {
+      const { error } = await sb.from('recurring_rules').delete().eq('id', id).eq('user_id', currentUser.id);
+      if (error) throw error;
+      recurringConfig.others = recurringConfig.others.filter(r => r.id !== id);
+      renderOtherRules();
+      if (editingOtherId === id) cancelEditOther();
+    } catch (err) {
+      showError('Failed to delete rule: ' + err.message);
+    }
   }
 
-  function cancelEditOther() {
-    editingOtherId = null;
-    clearOtherForm();
-  }
+  function cancelEditOther() { editingOtherId = null; clearOtherForm(); }
 
   function clearOtherForm() {
     editingOtherId = null;
@@ -1034,7 +1245,8 @@
     document.getElementById('other-cancel-btn').style.display = 'none';
   }
 
-  // ── Tab switching ──
+  // ── Tab switching ─────────────────────────────────────────────
+
   function setTxTab(tab) {
     currentTab = tab;
     document.getElementById('tab-all').classList.toggle('active', tab === 'all');
@@ -1042,12 +1254,13 @@
     render();
   }
 
-  // ── Flash a save button green briefly ──
+  // ── Flash save button ─────────────────────────────────────────
+
   function flashBtn(id) {
     const btn = document.getElementById(id);
     btn.classList.add('success');
     btn.textContent = 'Saved ✓';
-    setTimeout(function() {
+    setTimeout(() => {
       btn.classList.remove('success');
       btn.textContent = id.startsWith('salary') ? 'Save Salary'
                       : id.startsWith('rent')   ? 'Save Rent'
@@ -1055,9 +1268,13 @@
     }, 1400);
   }
 
+  // ── Formatting ────────────────────────────────────────────────
+
   function fmt(n) {
     return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
+
+  // ── Form helpers ──────────────────────────────────────────────
 
   function setType(type) {
     currentType = type;
@@ -1071,70 +1288,99 @@
     sel.innerHTML = CATEGORIES[currentType].map(c => `<option value="${c}">${c}</option>`).join('');
   }
 
-  function addEntry() {
+  // ── Transactions ──────────────────────────────────────────────
+
+  async function addEntry() {
     const desc   = document.getElementById('desc').value.trim();
     const amount = parseFloat(document.getElementById('amount').value);
     const cat    = document.getElementById('category').value;
 
-    if (!desc)          { shake('desc');   return; }
+    if (!desc)                  { shake('desc');   return; }
     if (!amount || amount <= 0) { shake('amount'); return; }
 
-    entries.unshift({
-      id: Date.now(),
-      type: currentType,
-      desc,
-      amount,
-      category: cat,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    });
+    const now        = new Date();
+    const txDate     = now.toISOString().split('T')[0];
+    const displayDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-    save();
-    document.getElementById('desc').value   = '';
-    document.getElementById('amount').value = '';
-    render();
-  }
+    const btn = document.getElementById('add-btn');
+    btn.disabled = true;
+    try {
+      const { data, error } = await sb.from('transactions').insert({
+        user_id: currentUser.id,
+        type: currentType,
+        label: desc,
+        amount,
+        category: cat,
+        date: displayDate,
+        tx_date: txDate,
+        is_recurring: false
+      }).select().single();
 
-  function deleteEntry(id) {
-    entries = entries.filter(e => e.id !== id);
-    save();
-    render();
-  }
+      if (error) throw error;
 
-  function clearAll() {
-    if (!entries.length) return;
-    if (confirm('Delete all transactions? This cannot be undone.')) {
-      entries = [];
-      save();
+      entries.unshift(normaliseEntry(data));
+      document.getElementById('desc').value   = '';
+      document.getElementById('amount').value = '';
       render();
+    } catch (err) {
+      showError('Failed to add transaction: ' + err.message);
+    } finally {
+      btn.disabled = false;
     }
   }
 
+  async function deleteEntry(id) {
+    try {
+      const { error } = await sb.from('transactions').delete().eq('id', id).eq('user_id', currentUser.id);
+      if (error) throw error;
+      entries = entries.filter(e => e.id !== id);
+      render();
+    } catch (err) {
+      showError('Failed to delete transaction: ' + err.message);
+    }
+  }
+
+  async function clearAll() {
+    if (!entries.length) return;
+    if (!confirm('Delete all transactions? This cannot be undone.')) return;
+    try {
+      const { error } = await sb.from('transactions').delete().eq('user_id', currentUser.id);
+      if (error) throw error;
+      entries = [];
+      render();
+    } catch (err) {
+      showError('Failed to clear transactions: ' + err.message);
+    }
+  }
+
+  // ── Shake animation ───────────────────────────────────────────
+
   function shake(id) {
     const el = document.getElementById(id);
+    if (!el) return;
     el.style.borderColor = 'var(--red)';
     el.style.animation = 'none';
-    requestAnimationFrame(() => {
-      el.style.animation = 'shake .35s ease';
-    });
+    requestAnimationFrame(() => { el.style.animation = 'shake .35s ease'; });
     setTimeout(() => { el.style.borderColor = ''; el.style.animation = ''; }, 600);
   }
 
+  // ── Render ────────────────────────────────────────────────────
+
   function render() {
-    // Global totals always use ALL entries (unaffected by tab filter)
-    const totalIncome  = entries.filter(e => e.type === 'income').reduce((s,e) => s + e.amount, 0);
+    // Global totals always use ALL entries
+    const totalIncome  = entries.filter(e => e.type === 'income').reduce((s,e)  => s + e.amount, 0);
     const totalExpense = entries.filter(e => e.type === 'expense').reduce((s,e) => s + e.amount, 0);
     const balance      = totalIncome - totalExpense;
 
     const balEl = document.getElementById('balance');
     balEl.textContent = (balance < 0 ? '-' : '') + fmt(balance);
-    balEl.className = 'balance-amount ' + (balance > 0 ? 'positive' : balance < 0 ? 'negative' : 'zero');
-
+    balEl.className   = 'balance-amount ' + (balance > 0 ? 'positive' : balance < 0 ? 'negative' : 'zero');
     document.getElementById('total-income').textContent  = fmt(totalIncome);
     document.getElementById('total-expense').textContent = fmt(totalExpense);
 
-    // Apply tab filter for display
+    // Apply tab filter
     const displayEntries = currentTab === 'recurring'
-      ? entries.filter(e => e.recurring)
+      ? entries.filter(e => e.is_recurring)
       : entries;
 
     const container = document.getElementById('tx-container');
@@ -1145,12 +1391,13 @@
       return;
     }
 
-    // Group entries by month using the id timestamp
+    // Group by YYYY-MM using tx_date string
     const groups = {};
     displayEntries.forEach(e => {
-      const d   = new Date(e.id);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const [yr, mo] = e.tx_date.split('-');
+      const key = yr + '-' + mo;
       if (!groups[key]) {
+        const d = new Date(e.tx_date + 'T12:00:00');
         groups[key] = {
           label:   d.toLocaleString('default', { month: 'long', year: 'numeric' }),
           entries: [],
@@ -1163,12 +1410,11 @@
       else                     groups[key].expense += e.amount;
     });
 
-    // Most recent month first
     const sortedKeys = Object.keys(groups).sort().reverse();
 
     container.innerHTML = sortedKeys.map(key => {
-      const g       = groups[key];
-      const net     = g.income - g.expense;
+      const g        = groups[key];
+      const net      = g.income - g.expense;
       const netClass = net > 0 ? 'positive' : net < 0 ? 'negative' : '';
       const netSign  = net >= 0 ? '+' : '−';
 
@@ -1176,12 +1422,12 @@
       <div class="tx-item">
         <div class="tx-icon ${e.type}">${ICONS[e.category] || '📌'}</div>
         <div class="tx-meta">
-          <div class="tx-desc">${escHtml(e.desc)}</div>
-          <div class="tx-detail">${e.recurring ? '🔁 · ' : ''}${e.category} · ${e.date}</div>
+          <div class="tx-desc">${escHtml(e.label)}</div>
+          <div class="tx-detail">${e.is_recurring ? '🔁 · ' : ''}${e.category} · ${e.date}</div>
         </div>
         <div class="tx-right">
           <span class="tx-amount ${e.type}">${e.type === 'income' ? '+' : '−'}${fmt(e.amount)}</span>
-          <button class="del-btn" onclick="deleteEntry(${e.id})" title="Delete">✕</button>
+          <button class="del-btn" onclick="deleteEntry('${e.id}')" title="Delete">✕</button>
         </div>
       </div>`).join('');
 
@@ -1200,30 +1446,54 @@
     }).join('');
   }
 
+  // ── Util ──────────────────────────────────────────────────────
+
   function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // Add shake keyframe dynamically
-  const style = document.createElement('style');
-  style.textContent = `@keyframes shake {
+  // ── Keyframes ─────────────────────────────────────────────────
+
+  const _style = document.createElement('style');
+  _style.textContent = `@keyframes shake {
     0%,100%{transform:translateX(0)}
     20%{transform:translateX(-6px)}
     40%{transform:translateX(6px)}
     60%{transform:translateX(-4px)}
     80%{transform:translateX(4px)}
   }`;
-  document.head.appendChild(style);
+  document.head.appendChild(_style);
 
-  // Init
+  // ── Init ──────────────────────────────────────────────────────
+
   populateCategories();
-  render();
-  populateSalaryForm();
-  populateRentForm();
-  renderOtherRules();
-  checkAndApplyRecurring();
 
-  // Allow Enter key to submit
+  // Show login immediately; auth state change will switch to app if session exists
+  showLoginScreen();
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (session) {
+      if (!appLoaded || event === 'SIGNED_IN') {
+        appLoaded = true;
+        currentUser = session.user;
+        showApp();
+        await loadData();
+        await checkAndApplyRecurring();
+      } else {
+        // Token refresh — just update the user reference
+        currentUser = session.user;
+      }
+    } else {
+      appLoaded = false;
+      currentUser = null;
+      entries = [];
+      recurringConfig = buildRecurringConfig([]);
+      render();
+      showLoginScreen();
+    }
+  });
+
+  // Enter key submits the add-transaction form
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.target.id === 'desc' || e.target.id === 'amount')) {
       addEntry();
