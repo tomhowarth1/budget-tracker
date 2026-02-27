@@ -769,9 +769,18 @@
     btn.textContent = 'Sending…';
     document.getElementById('login-err').style.display = 'none';
 
+    if (window.location.protocol === 'file:') {
+      document.getElementById('login-err').textContent =
+        'Magic links cannot redirect to a file:// URL. Please serve this file via a local HTTP server — e.g. run: python3 -m http.server 8080';
+      document.getElementById('login-err').style.display = '';
+      btn.disabled = false;
+      btn.textContent = 'Send magic link';
+      return;
+    }
+
     const { error } = await sb.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.href }
+      options: { emailRedirectTo: window.location.origin + window.location.pathname }
     });
 
     if (error) {
