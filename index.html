@@ -120,9 +120,6 @@
       margin-top: 4px;
     }
     .signout-btn {
-      position: absolute;
-      top: 0;
-      right: 0;
       font-size: .78rem;
       font-weight: 600;
       color: var(--text-muted);
@@ -467,6 +464,141 @@
 
     .rec-add-form { border-top: 1.5px solid var(--border); margin-top: 12px; padding-top: 12px; }
     .rec-add-title { font-size: .78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+
+    /* ── Login multi-step ── */
+    #ls-step-signup .form-group,
+    #ls-step-signin .form-group { margin-bottom: 12px; }
+    .login-btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+    .login-btn-primary {
+      width: 100%; padding: 12px; border-radius: 10px; border: none;
+      background: var(--blue); color: #fff;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: background .18s, transform .1s;
+    }
+    .login-btn-primary:hover  { background: #1d4ed8; }
+    .login-btn-primary:active { transform: scale(.98); }
+    .login-btn-secondary {
+      width: 100%; padding: 12px; border-radius: 10px;
+      background: var(--surface); color: var(--blue); border: 1.5px solid var(--blue);
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: background .18s, transform .1s;
+    }
+    .login-btn-secondary:hover  { background: var(--blue-bg); }
+    .login-btn-secondary:active { transform: scale(.98); }
+    .login-back {
+      background: none; border: none; cursor: pointer; padding: 0 0 10px;
+      font-size: .85rem; color: var(--text-muted); font-family: inherit; display: block;
+    }
+    .login-back:hover { color: var(--blue); }
+    .login-step-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; color: var(--text); text-align: left; }
+    .login-step-sub   { font-size: .85rem; color: var(--text-muted); margin-bottom: 16px; text-align: left; font-weight: 600; }
+    #ls-step-signup, #ls-step-signin { text-align: left; }
+    .login-btn-outline {
+      width: 100%; padding: 12px; border-radius: 10px;
+      background: var(--surface); color: var(--blue); border: 1.5px solid var(--blue);
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: background .18s, transform .1s; margin-top: 4px;
+    }
+    .login-btn-outline:hover    { background: var(--blue-bg); }
+    .login-btn-outline:active   { transform: scale(.98); }
+    .login-btn-outline:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .signin-option {
+      border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 14px 16px; margin-bottom: 4px;
+    }
+    .signin-option-label {
+      font-size: .75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--text-muted); margin-bottom: 10px;
+    }
+    .signin-divider {
+      display: flex; align-items: center; gap: 10px;
+      font-size: .8rem; color: var(--text-muted); margin: 8px 0;
+    }
+    .signin-divider::before, .signin-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Password strength & requirements ── */
+    .pw-strength-wrap { display: flex; align-items: center; gap: 8px; margin: 6px 0 8px; }
+    .pw-strength-bar  { display: flex; gap: 3px; flex: 1; }
+    .pw-seg { height: 5px; flex: 1; border-radius: 3px; background: var(--border); transition: background .2s; }
+    .pw-seg.weak   { background: var(--red); }
+    .pw-seg.medium { background: #f59e0b; }
+    .pw-seg.strong { background: var(--green); }
+    .pw-strength-label { font-size: .75rem; color: var(--text-muted); min-width: 42px; }
+    .pw-reqs { list-style: none; margin: 0 0 12px; padding: 0; }
+    .pw-reqs li { font-size: .82rem; color: var(--text-muted); padding: 2px 0; }
+    .pw-reqs li::before { content: '○  '; }
+    .pw-reqs li.met { color: var(--green); }
+    .pw-reqs li.met::before { content: '✓  '; }
+
+    /* ── Header actions ── */
+    .header-actions { position: absolute; top: 0; right: 0; display: flex; align-items: center; gap: 6px; }
+    .settings-btn {
+      font-size: .85rem; color: var(--text-muted);
+      background: none; border: 1.5px solid var(--border); cursor: pointer;
+      padding: 5px 9px; border-radius: 7px; font-family: inherit; line-height: 1;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .settings-btn:hover { background: var(--blue-bg); color: var(--blue); border-color: var(--blue); }
+
+    /* ── Settings page ── */
+    .settings-page { max-width: 640px; margin: 0 auto; padding-bottom: 40px; }
+    .settings-topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+    .settings-back-btn {
+      background: none; border: none; cursor: pointer; padding: 0;
+      font-size: .9rem; font-weight: 600; color: var(--blue); font-family: inherit;
+    }
+    .settings-back-btn:hover { text-decoration: underline; }
+    .settings-page-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -.3px; }
+    .settings-section {
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 20px 24px; margin-bottom: 16px;
+    }
+    .settings-section-hd {
+      font-size: .75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--text-muted);
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .settings-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-lbl { font-size: .9rem; color: var(--text-muted); flex-shrink: 0; }
+    .settings-val { font-size: .9rem; font-weight: 600; word-break: break-all; text-align: right; margin-left: 16px; }
+    .settings-link-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--blue); font-weight: 600; font-size: .9rem; font-family: inherit; padding: 0;
+    }
+    .settings-link-btn:hover { text-decoration: underline; }
+    .settings-sub-panel { padding: 14px 0 4px; }
+    .settings-sub-panel .pw-reqs { margin-bottom: 8px; }
+    .settings-sub-panel .pw-strength-wrap { margin-top: 0; }
+    .settings-danger-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--red); font-weight: 600; font-size: .9rem; font-family: inherit; padding: 0;
+    }
+    .settings-danger-btn:hover { text-decoration: underline; }
+    .settings-danger-info { font-size: .85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+    .danger-confirm-btn {
+      width: 100%; padding: 12px; border-radius: 10px; border: none;
+      background: var(--red); color: #fff;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: background .18s, transform .1s; margin-top: 8px;
+    }
+    .danger-confirm-btn:hover    { background: #b91c1c; }
+    .danger-confirm-btn:active   { transform: scale(.98); }
+    .danger-confirm-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .settings-section--soon { opacity: .75; }
+    .coming-soon-tag {
+      display: inline-block; background: var(--bg); color: var(--text-muted);
+      font-size: .68rem; padding: 2px 7px; border-radius: 10px; font-weight: 600;
+      text-transform: none; letter-spacing: .02em;
+    }
+    .settings-soon-text { font-size: .85rem; color: var(--text-muted); margin-top: 6px; }
+    .settings-form-ok {
+      margin-top: 10px; font-size: .85rem; color: var(--green);
+      background: var(--green-bg); border-radius: 8px; padding: 10px 12px;
+    }
   </style>
 </head>
 <body>
@@ -477,18 +609,77 @@
     <div class="login-card">
       <div class="login-logo">💳</div>
       <h1>Budget Tracker</h1>
-      <p class="login-sub">Sign in to access your transactions</p>
-      <div id="login-form" class="login-form-inner">
-        <div class="form-group">
+      <p class="login-sub">Your personal finance tracker</p>
+
+      <!-- Step 1: email + choose path -->
+      <div id="ls-step-email">
+        <div class="form-group" style="margin-bottom:12px">
           <label for="login-email">Email address</label>
-          <input type="email" id="login-email" placeholder="you@example.com" />
+          <input type="email" id="login-email" placeholder="you@example.com"
+                 onkeydown="if(event.key==='Enter')startSignIn()" />
         </div>
-        <button class="magic-btn" id="magic-btn" onclick="sendMagicLink()">Send magic link</button>
+        <div class="login-btn-row">
+          <button class="login-btn-primary"   onclick="startSignIn()">Sign in</button>
+          <button class="login-btn-secondary" onclick="startSignUp()">Create account</button>
+        </div>
       </div>
-      <div id="login-sent" class="login-sent-box" style="display:none">
+
+      <!-- Step 2a: create account — set password -->
+      <div id="ls-step-signup" style="display:none">
+        <button class="login-back" onclick="backToEmail()">← Back</button>
+        <p class="login-step-title">Create account</p>
+        <p class="login-step-sub" id="signup-email-lbl"></p>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" autocomplete="new-password"
+                 placeholder="Create a password"
+                 oninput="onPwInput('signup-password','su-req-len','su-req-upper','su-req-num','su-strength')" />
+        </div>
+        <div class="pw-strength-wrap">
+          <div class="pw-strength-bar" id="su-strength">
+            <div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div>
+          </div>
+          <span class="pw-strength-label" id="su-strength-lbl"></span>
+        </div>
+        <ul class="pw-reqs">
+          <li id="su-req-len">At least 8 characters</li>
+          <li id="su-req-upper">At least one uppercase letter (A–Z)</li>
+          <li id="su-req-num">At least one number (0–9)</li>
+        </ul>
+        <div class="form-group">
+          <label for="signup-confirm">Confirm password</label>
+          <input type="password" id="signup-confirm" autocomplete="new-password"
+                 placeholder="Repeat your password" />
+        </div>
+        <button class="magic-btn" id="signup-btn" onclick="createAccount()" style="margin-top:12px">Create account</button>
+      </div>
+
+      <!-- Step 2b: sign in — password or magic link -->
+      <div id="ls-step-signin" style="display:none">
+        <button class="login-back" onclick="backToEmail()">← Back</button>
+        <p class="login-step-title">Sign in</p>
+        <p class="login-step-sub" id="signin-email-lbl"></p>
+        <div class="signin-option signin-option--pw">
+          <p class="signin-option-label">Password</p>
+          <div class="form-group">
+            <input type="password" id="signin-password" autocomplete="current-password"
+                   placeholder="Your password" />
+          </div>
+          <button class="magic-btn" id="pw-signin-btn" onclick="signInWithPassword()">Sign in</button>
+        </div>
+        <div class="signin-divider"><span>or</span></div>
+        <div class="signin-option signin-option--ml">
+          <p class="signin-option-label">Magic link</p>
+          <button class="login-btn-outline" id="magic-btn" onclick="sendMagicLink()">Send magic link</button>
+        </div>
+      </div>
+
+      <!-- Step 2b-sent: magic link sent -->
+      <div id="ls-step-sent" style="display:none" class="login-sent-box">
         ✉️ Check your email for a login link.<br>
         <strong>You can close this tab and click the link from any device.</strong>
       </div>
+
       <div id="login-err" class="login-err" style="display:none"></div>
     </div>
   </div>
@@ -512,8 +703,89 @@
   <header>
     <h1>Budget Tracker</h1>
     <p>Keep tabs on your income &amp; expenses</p>
-    <button class="signout-btn" onclick="signOut()">Sign out</button>
+    <div class="header-actions">
+      <button class="settings-btn" onclick="showSettings()" title="Settings">⚙️</button>
+      <button class="signout-btn"  onclick="signOut()">Sign out</button>
+    </div>
   </header>
+
+  <!-- ── Settings page (replaces .container when open) ── -->
+  <div id="settings-page" class="settings-page" style="display:none">
+    <div class="settings-topbar">
+      <button class="settings-back-btn" onclick="hideSettings()">← Back</button>
+      <h2 class="settings-page-title">Settings</h2>
+    </div>
+
+    <!-- Account section -->
+    <div class="settings-section">
+      <h3 class="settings-section-hd">Account</h3>
+      <div class="settings-row">
+        <span class="settings-lbl">Signed in as</span>
+        <span class="settings-val" id="settings-email"></span>
+      </div>
+
+      <!-- Change password -->
+      <div class="settings-row" style="border-bottom:none;padding-bottom:0">
+        <button class="settings-link-btn" onclick="toggleChangePw()">Change password</button>
+      </div>
+      <div id="change-pw-panel" class="settings-sub-panel" style="display:none">
+        <div class="form-group" id="current-pw-group">
+          <label for="current-pw">Current password</label>
+          <input type="password" id="current-pw" autocomplete="current-password" placeholder="Your current password" />
+        </div>
+        <div class="form-group">
+          <label for="new-pw">New password</label>
+          <input type="password" id="new-pw" autocomplete="new-password" placeholder="New password"
+                 oninput="onPwInput('new-pw','ch-req-len','ch-req-upper','ch-req-num','ch-strength')" />
+        </div>
+        <div class="pw-strength-wrap">
+          <div class="pw-strength-bar" id="ch-strength">
+            <div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div>
+          </div>
+          <span class="pw-strength-label" id="ch-strength-lbl"></span>
+        </div>
+        <ul class="pw-reqs">
+          <li id="ch-req-len">At least 8 characters</li>
+          <li id="ch-req-upper">At least one uppercase letter (A–Z)</li>
+          <li id="ch-req-num">At least one number (0–9)</li>
+        </ul>
+        <div class="form-group">
+          <label for="confirm-new-pw">Confirm new password</label>
+          <input type="password" id="confirm-new-pw" autocomplete="new-password" placeholder="Repeat new password" />
+        </div>
+        <div id="change-pw-err" class="login-err" style="display:none"></div>
+        <div id="change-pw-ok" class="settings-form-ok" style="display:none"></div>
+        <button class="magic-btn" id="change-pw-btn" onclick="changePassword()" style="margin-top:12px">Update password</button>
+      </div>
+
+      <!-- Delete account -->
+      <div class="settings-row" style="border-bottom:none;padding-bottom:0;margin-top:14px">
+        <button class="settings-danger-btn" onclick="toggleDeleteAccount()">Delete account</button>
+      </div>
+      <div id="delete-account-panel" class="settings-sub-panel" style="display:none">
+        <p class="settings-danger-info">This permanently deletes your account and all your transactions. This cannot be undone.</p>
+        <div class="form-group">
+          <label for="delete-confirm-input">Type <strong>DELETE</strong> to confirm</label>
+          <input type="text" id="delete-confirm-input" placeholder="DELETE"
+                 oninput="document.getElementById('delete-btn').disabled=this.value!=='DELETE'" />
+        </div>
+        <div id="delete-err" class="login-err" style="display:none"></div>
+        <button class="danger-confirm-btn" id="delete-btn" disabled onclick="deleteAccount()">Permanently delete account</button>
+      </div>
+    </div>
+
+    <!-- Preferences placeholder -->
+    <div class="settings-section settings-section--soon">
+      <h3 class="settings-section-hd">Preferences <span class="coming-soon-tag">Coming soon</span></h3>
+      <p class="settings-soon-text">Theme, currency, and display options will appear here.</p>
+    </div>
+
+    <!-- Notifications placeholder -->
+    <div class="settings-section settings-section--soon">
+      <h3 class="settings-section-hd">Notifications <span class="coming-soon-tag">Coming soon</span></h3>
+      <p class="settings-soon-text">Email digests and spending alerts will appear here.</p>
+    </div>
+  </div><!-- /#settings-page -->
 
   <div class="container">
 
@@ -719,6 +991,14 @@
  *  create policy "own_recurring_rules" on recurring_rules
  *    for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
  *
+ *  -- Required for the "Delete account" feature in Settings:
+ *  create or replace function delete_user()
+ *  returns void language plpgsql security definer set search_path = public as $$
+ *  begin
+ *    delete from auth.users where id = auth.uid();
+ *  end;
+ *  $$;
+ *
  * ─────────────────────────────────────────────────────────────
  */
 
@@ -739,6 +1019,7 @@
   };
 
   // ── State ──
+  let loginEmail     = '';   // captured at login step 1, reused in step 2 functions
   let currentUser    = null;
   let entries        = [];
   let recurringConfig = buildRecurringConfig([]);  // populated after loadData
@@ -753,6 +1034,8 @@
   function showLoginScreen() {
     document.getElementById('login-screen').style.display = '';
     document.getElementById('app').style.display = 'none';
+    loginEmail = '';
+    showLoginStep('ls-step-email');
   }
 
   function showApp() {
@@ -760,43 +1043,306 @@
     document.getElementById('app').style.display = '';
   }
 
-  async function sendMagicLink() {
+  // ── Login step machine ─────────────────────────────────────────
+
+  function showLoginStep(id) {
+    ['ls-step-email','ls-step-signup','ls-step-signin','ls-step-sent'].forEach(s => {
+      document.getElementById(s).style.display = s === id ? '' : 'none';
+    });
+    document.getElementById('login-err').style.display = 'none';
+  }
+
+  function startSignIn() {
     const email = document.getElementById('login-email').value.trim();
     if (!email) { shake('login-email'); return; }
+    loginEmail = email;
+    document.getElementById('signin-email-lbl').textContent = email;
+    showLoginStep('ls-step-signin');
+    setTimeout(() => document.getElementById('signin-password').focus(), 50);
+  }
 
+  function startSignUp() {
+    const email = document.getElementById('login-email').value.trim();
+    if (!email) { shake('login-email'); return; }
+    loginEmail = email;
+    document.getElementById('signup-email-lbl').textContent = email;
+    showLoginStep('ls-step-signup');
+    setTimeout(() => document.getElementById('signup-password').focus(), 50);
+  }
+
+  function backToEmail() {
+    showLoginStep('ls-step-email');
+  }
+
+  // ── Password helpers ───────────────────────────────────────────
+
+  function validatePassword(pw) {
+    const len   = pw.length >= 8;
+    const upper = /[A-Z]/.test(pw);
+    const num   = /[0-9]/.test(pw);
+    return { len, upper, num, valid: len && upper && num };
+  }
+
+  function onPwInput(pwId, lenId, upperId, numId, barId) {
+    const pw = document.getElementById(pwId).value;
+    const v  = validatePassword(pw);
+
+    document.getElementById(lenId).classList.toggle('met', v.len);
+    document.getElementById(upperId).classList.toggle('met', v.upper);
+    document.getElementById(numId).classList.toggle('met', v.num);
+
+    const bar  = document.getElementById(barId);
+    const segs = bar.querySelectorAll('.pw-seg');
+    const met  = [v.len, v.upper, v.num].filter(Boolean).length;
+    const cls  = met <= 1 ? 'weak' : met === 2 ? 'medium' : 'strong';
+    segs.forEach((s, i) => { s.className = 'pw-seg' + (pw && i < met ? ' ' + cls : ''); });
+
+    document.getElementById(barId + '-lbl').textContent =
+      !pw ? '' : met <= 1 ? 'Weak' : met === 2 ? 'Medium' : 'Strong';
+  }
+
+  // ── Create account ─────────────────────────────────────────────
+
+  async function createAccount() {
+    const pw  = document.getElementById('signup-password').value;
+    const pw2 = document.getElementById('signup-confirm').value;
+    const v   = validatePassword(pw);
+    const err = document.getElementById('login-err');
+
+    if (!v.valid) {
+      err.textContent = 'Password does not meet the requirements shown above.';
+      err.style.display = '';
+      return;
+    }
+    if (pw !== pw2) {
+      err.textContent = 'Passwords do not match.';
+      err.style.display = '';
+      shake('signup-confirm');
+      return;
+    }
+
+    const btn = document.getElementById('signup-btn');
+    btn.disabled = true;
+    btn.textContent = 'Creating account…';
+    err.style.display = 'none';
+
+    const { error } = await sb.auth.signUp({
+      email: loginEmail,
+      password: pw,
+      options: { data: { has_password: true } }
+    });
+
+    if (error) {
+      err.textContent = error.message;
+      err.style.display = '';
+      btn.disabled = false;
+      btn.textContent = 'Create account';
+    }
+    // On success: onAuthStateChange fires SIGNED_IN → showApp() + loadData()
+  }
+
+  // ── Sign in with password ──────────────────────────────────────
+
+  async function signInWithPassword() {
+    const pw  = document.getElementById('signin-password').value;
+    const err = document.getElementById('login-err');
+    if (!pw) { shake('signin-password'); return; }
+
+    const btn = document.getElementById('pw-signin-btn');
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    err.style.display = 'none';
+
+    const { error } = await sb.auth.signInWithPassword({ email: loginEmail, password: pw });
+
+    if (error) {
+      err.textContent = error.message;
+      err.style.display = '';
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+    }
+    // On success: onAuthStateChange fires SIGNED_IN → showApp()
+  }
+
+  async function sendMagicLink() {
     const btn = document.getElementById('magic-btn');
+    const err = document.getElementById('login-err');
     btn.disabled = true;
     btn.textContent = 'Sending…';
-    document.getElementById('login-err').style.display = 'none';
+    err.style.display = 'none';
 
     if (window.location.protocol === 'file:') {
-      document.getElementById('login-err').textContent =
-        'Magic links cannot redirect to a file:// URL. Please serve this file via a local HTTP server — e.g. run: python3 -m http.server 8080';
-      document.getElementById('login-err').style.display = '';
+      err.textContent = 'Magic links cannot redirect to a file:// URL. Please serve this file via a local HTTP server — e.g. run: python3 -m http.server 8080';
+      err.style.display = '';
       btn.disabled = false;
       btn.textContent = 'Send magic link';
       return;
     }
 
     const { error } = await sb.auth.signInWithOtp({
-      email,
+      email: loginEmail,
       options: { emailRedirectTo: 'https://tomhowarth1.github.io/budget-tracker/' }
     });
 
     if (error) {
-      document.getElementById('login-err').textContent = error.message;
-      document.getElementById('login-err').style.display = '';
+      err.textContent = error.message;
+      err.style.display = '';
       btn.disabled = false;
       btn.textContent = 'Send magic link';
     } else {
-      document.getElementById('login-form').style.display = 'none';
-      document.getElementById('login-sent').style.display = '';
+      showLoginStep('ls-step-sent');
     }
   }
 
   async function signOut() {
     await sb.auth.signOut();
     // onAuthStateChange handles reset + showLoginScreen
+  }
+
+  // ── Settings ───────────────────────────────────────────────────
+
+  function showSettings() {
+    document.querySelector('.container').style.display = 'none';
+    document.getElementById('settings-page').style.display = '';
+    document.getElementById('settings-email').textContent = currentUser.email;
+    // Show current-pw-group only if the user already has a password
+    const hasPw = currentUser.user_metadata?.has_password === true;
+    document.getElementById('current-pw-group').style.display = hasPw ? '' : 'none';
+    // Collapse any open panels
+    document.getElementById('change-pw-panel').style.display = 'none';
+    document.getElementById('delete-account-panel').style.display = 'none';
+  }
+
+  function hideSettings() {
+    document.getElementById('settings-page').style.display = 'none';
+    document.querySelector('.container').style.display = '';
+  }
+
+  function toggleChangePw() {
+    const panel = document.getElementById('change-pw-panel');
+    const open  = panel.style.display === 'none';
+    panel.style.display = open ? '' : 'none';
+    if (open) {
+      document.getElementById('change-pw-err').style.display = 'none';
+      document.getElementById('change-pw-ok').style.display  = 'none';
+      setTimeout(() => {
+        const hasPw = currentUser.user_metadata?.has_password === true;
+        (hasPw
+          ? document.getElementById('current-pw')
+          : document.getElementById('new-pw')
+        ).focus();
+      }, 50);
+    }
+  }
+
+  function toggleDeleteAccount() {
+    const panel = document.getElementById('delete-account-panel');
+    panel.style.display = panel.style.display === 'none' ? '' : 'none';
+    if (panel.style.display !== 'none') {
+      document.getElementById('delete-confirm-input').value = '';
+      document.getElementById('delete-btn').disabled = true;
+      document.getElementById('delete-err').style.display = 'none';
+    }
+  }
+
+  async function changePassword() {
+    const hasPw     = currentUser.user_metadata?.has_password === true;
+    const currentPw = document.getElementById('current-pw').value;
+    const newPw     = document.getElementById('new-pw').value;
+    const confirmPw = document.getElementById('confirm-new-pw').value;
+    const err       = document.getElementById('change-pw-err');
+    const ok        = document.getElementById('change-pw-ok');
+    const btn       = document.getElementById('change-pw-btn');
+    const v         = validatePassword(newPw);
+
+    err.style.display = 'none';
+    ok.style.display  = 'none';
+
+    if (!v.valid) {
+      err.textContent = 'Password does not meet the requirements shown above.';
+      err.style.display = '';
+      return;
+    }
+    if (newPw !== confirmPw) {
+      err.textContent = 'Passwords do not match.';
+      err.style.display = '';
+      shake('confirm-new-pw');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Updating…';
+
+    // If user already has a password, verify it first
+    if (hasPw) {
+      if (!currentPw) {
+        err.textContent = 'Please enter your current password.';
+        err.style.display = '';
+        btn.disabled = false;
+        btn.textContent = 'Update password';
+        shake('current-pw');
+        return;
+      }
+      const { error: reAuthErr } = await sb.auth.signInWithPassword({ email: currentUser.email, password: currentPw });
+      if (reAuthErr) {
+        err.textContent = 'Current password is incorrect.';
+        err.style.display = '';
+        btn.disabled = false;
+        btn.textContent = 'Update password';
+        return;
+      }
+    }
+
+    const { data, error } = await sb.auth.updateUser({ password: newPw, data: { has_password: true } });
+    btn.disabled = false;
+    btn.textContent = 'Update password';
+
+    if (error) {
+      err.textContent = error.message;
+      err.style.display = '';
+      return;
+    }
+
+    // Update local user reference so has_password is reflected immediately
+    if (data?.user) currentUser = data.user;
+
+    // Clear fields and show success
+    ['current-pw','new-pw','confirm-new-pw'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    // Reset strength bar and requirements for next open
+    onPwInput('new-pw','ch-req-len','ch-req-upper','ch-req-num','ch-strength');
+
+    ok.textContent = '✓ Password updated successfully.';
+    ok.style.display = '';
+    // Now user has a password — show current-pw-group for future opens
+    document.getElementById('current-pw-group').style.display = '';
+  }
+
+  async function deleteAccount() {
+    const input = document.getElementById('delete-confirm-input').value.trim();
+    const err   = document.getElementById('delete-err');
+    if (input !== 'DELETE') {
+      err.textContent = 'Please type DELETE exactly to confirm.';
+      err.style.display = '';
+      return;
+    }
+
+    const btn = document.getElementById('delete-btn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting…';
+    err.style.display = 'none';
+
+    // 1. Delete all user data (RLS enforces ownership)
+    await sb.from('transactions').delete().eq('user_id', currentUser.id);
+    await sb.from('recurring_rules').delete().eq('user_id', currentUser.id);
+
+    // 2. Delete auth account via Postgres RPC (requires delete_user() SQL in schema)
+    await sb.rpc('delete_user').catch(() => {});
+
+    // 3. Sign out — onAuthStateChange handles reset + showLoginScreen
+    await sb.auth.signOut();
   }
 
   // ── Error banner ──────────────────────────────────────────────
