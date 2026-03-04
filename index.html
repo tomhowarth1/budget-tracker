@@ -1195,8 +1195,12 @@
   }
 
   async function signOut() {
-    await sb.auth.signOut();
-    // onAuthStateChange handles reset + showLoginScreen
+    try {
+      await sb.auth.signOut();
+    } catch(e) {
+      // Force local sign-out even if the network call fails
+      showLoginScreen();
+    }
   }
 
   // ── Settings ───────────────────────────────────────────────────
@@ -1273,6 +1277,7 @@
     btn.disabled = true;
     btn.textContent = 'Updating…';
 
+    try {
     // If user already has a password, verify it first
     if (hasPw) {
       if (!currentPw) {
@@ -1318,6 +1323,12 @@
     ok.style.display = '';
     // Now user has a password — show current-pw-group for future opens
     document.getElementById('current-pw-group').style.display = '';
+    } catch(e) {
+      btn.disabled = false;
+      btn.textContent = 'Update password';
+      err.textContent = 'Something went wrong. Please try again.';
+      err.style.display = '';
+    }
   }
 
   async function deleteAccount() {
